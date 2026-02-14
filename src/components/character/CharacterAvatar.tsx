@@ -12,7 +12,7 @@ export function CharacterAvatar({ character, className = '' }: CharacterAvatarPr
   const getAuraEffect = () => {
     switch (visualTraits.aura) {
       case 'soft-glow':
-        return 'drop-shadow-[0_0_15px_rgba(232,184,109,0.4)]';
+        return 'drop-shadow-[0_0_25px_rgba(232,184,109,0.4)]';
       case 'radiant':
         return 'drop-shadow-[0_0_25px_rgba(232,184,109,0.6)]';
       case 'ethereal':
@@ -51,12 +51,27 @@ export function CharacterAvatar({ character, className = '' }: CharacterAvatarPr
         <div className="absolute top-16 left-12 w-4 h-4 bg-[#2C2C2E] rounded-full" />
         <div className="absolute top-16 right-12 w-4 h-4 bg-[#2C2C2E] rounded-full" />
         
-        {/* Smile */}
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-12 h-6 border-b-2 border-[#2C2C2E] rounded-b-full" />
-        
-        {/* Level indicator */}
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#E8B86D] text-white px-4 py-1 rounded-full text-sm font-mono font-semibold shadow-lg">
-          Lv. {currentLevel}
+        {/* Smile - filled crescent */}
+        <svg
+          className="absolute bottom-16 left-1/2 -translate-x-1/2 w-12 h-6"
+          viewBox="0 0 48 24"
+          fill="none"
+        >
+          <path
+            d="M 4 20 Q 24 4 44 20 L 4 20 Z"
+            fill="rgba(44, 44, 46, 0.9)"
+          />
+        </svg>
+
+        {/* Level indicator - RPG style */}
+        <div
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-lg text-sm font-mono font-bold text-white border-2 border-amber-800/60"
+          style={{
+            background: 'linear-gradient(180deg, #E8B86D 0%, #c99a3d 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 rgba(0,0,0,0.2)',
+          }}
+        >
+          LV {currentLevel}
         </div>
       </div>
       

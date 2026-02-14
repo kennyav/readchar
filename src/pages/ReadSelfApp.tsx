@@ -64,8 +64,8 @@ export default function ReadSelfApp() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#F9F6F1] flex items-center justify-center">
-        <div className="text-2xl text-[#6C6C70]">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="font-game text-2xl text-[#6C6C70] font-semibold">Loading...</div>
       </div>
     );
   }
@@ -130,94 +130,82 @@ export default function ReadSelfApp() {
   const totalReadingMinutes = Math.floor((data.character.totalReadingTime % 3600) / 60);
 
   return (
-    <div className="min-h-screen bg-[#F9F6F1]">
-      {/* Evolution notification */}
+    <div className="min-h-screen">
+      {/* Evolution notification - achievement style */}
       <AnimatePresence>
         {showEvolution && (
           <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, scale: 0.8, y: -30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -20 }}
             className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
           >
-            <Card
-              className="px-6 py-4 bg-[#9B7EBD] text-white font-bold flex items-center gap-3"
-              style={{
-                boxShadow: '0 8px 24px rgba(155, 126, 189, 0.4)',
-              }}
-            >
-              <Sparkles className="w-6 h-6" />
-              Your character has evolved!
-            </Card>
+            <div className="game-panel rounded-2xl px-6 py-4 flex items-center gap-3 border-2 border-[#9B7EBD] bg-gradient-to-r from-[#9B7EBD] to-[#8B6EAD] text-white font-game font-bold text-lg shadow-lg">
+              <Sparkles className="w-7 h-7 drop-shadow" />
+              <span className="tracking-wide">LEVEL UP!</span>
+              <span className="opacity-90 font-medium">Your character evolved</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Tabs defaultValue="character" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-white rounded-full p-1">
-            <TabsTrigger value="character" className="rounded-full">
+          <TabsList className="game-panel grid w-full grid-cols-3 mb-8 rounded-2xl p-1.5">
+            <TabsTrigger
+              value="character"
+              className="rounded-xl font-game font-semibold data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               Character
             </TabsTrigger>
-            <TabsTrigger value="library" className="rounded-full">
+            <TabsTrigger
+              value="library"
+              className="rounded-xl font-game font-semibold data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               Library
             </TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-full">
+            <TabsTrigger
+              value="stats"
+              className="rounded-xl font-game font-semibold data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               Stats
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="character" className="space-y-8">
             {/* Character display section */}
-            <div
-              className="p-8 rounded-3xl"
-              style={{
-                background: 'white',
-                boxShadow: '-8px -8px 16px rgba(255, 255, 255, 0.8), 8px 8px 16px rgba(0, 0, 0, 0.1)',
-              }}
-            >
+            <div className="game-panel p-8 rounded-2xl">
               <div className="flex flex-col items-center">
                 <CharacterAvatar character={data.character} className="mb-6" />
-                <h2 className="text-2xl font-bold text-[#2C2C2E] mb-2" style={{ fontFamily: 'serif' }}>
+                <h2 className="font-game text-2xl font-bold text-[#2C2C2E] mb-2 tracking-wide">
                   Your Reading Companion
                 </h2>
-                <p className="text-[#6C6C70]">Level {data.character.currentLevel}</p>
+                <p className="text-[#6C6C70] font-medium">Level {data.character.currentLevel}</p>
               </div>
             </div>
 
             {/* Attribute constellation */}
-            <div
-              className="p-8 rounded-3xl"
-              style={{
-                background: 'white',
-                boxShadow: '-8px -8px 16px rgba(255, 255, 255, 0.8), 8px 8px 16px rgba(0, 0, 0, 0.1)',
-                minHeight: '400px',
-              }}
-            >
+            <div className="game-panel p-8 rounded-2xl flex flex-col min-h-[400px]">
+              <div className="">
               <AttributeConstellation
                 character={data.character}
                 onAttributeClick={setSelectedAttribute}
               />
+              </div>
             </div>
 
             {/* Action buttons */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
                 onClick={() => setShowAddBook(true)}
-                className="h-20 bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white rounded-2xl text-lg"
-                style={{
-                  boxShadow: '0 4px 12px rgba(155, 126, 189, 0.3)',
-                }}
+                className="game-panel h-20 bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white rounded-2xl text-lg font-game font-semibold border-2 border-[#7a6a9a] hover:border-[#6a5a8a] transition-all active:scale-[0.98]"
               >
                 <BookOpen className="w-6 h-6 mr-3" />
                 Log a Book
               </Button>
               <Button
                 onClick={() => setShowTimer(true)}
-                className="h-20 bg-[#A8C5A0] hover:bg-[#98B590] text-white rounded-2xl text-lg"
-                style={{
-                  boxShadow: '0 4px 12px rgba(168, 197, 160, 0.3)',
-                }}
+                className="game-panel h-20 bg-[#A8C5A0] hover:bg-[#98B590] text-white rounded-2xl text-lg font-game font-semibold border-2 border-[#8ab08a] hover:border-[#7aa07a] transition-all active:scale-[0.98]"
               >
                 <Clock className="w-6 h-6 mr-3" />
                 Start Reading Session
@@ -226,14 +214,8 @@ export default function ReadSelfApp() {
 
             {/* Recommendations */}
             {recommendations.length > 0 && (
-              <div
-                className="p-6 rounded-2xl"
-                style={{
-                  background: 'white',
-                  boxShadow: '-4px -4px 8px rgba(255, 255, 255, 0.8), 4px 4px 8px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                <h3 className="text-lg font-bold text-[#2C2C2E] mb-3 flex items-center gap-2">
+              <div className="game-panel p-6 rounded-2xl">
+                <h3 className="font-game text-lg font-bold text-[#2C2C2E] mb-3 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
                   Recommended for Balance
                 </h3>
@@ -256,12 +238,12 @@ export default function ReadSelfApp() {
 
           <TabsContent value="library" className="space-y-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-3xl font-bold text-[#2C2C2E]" style={{ fontFamily: 'serif' }}>
+              <h2 className="font-game text-3xl font-bold text-[#2C2C2E] tracking-wide">
                 Your Reading Library
               </h2>
               <Button
                 onClick={() => setShowAddBook(true)}
-                className="bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white rounded-full"
+                className="game-panel bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white rounded-xl font-game font-semibold border-2 border-[#7a6a9a]"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Add Book
@@ -275,19 +257,13 @@ export default function ReadSelfApp() {
                 ))}
               </div>
             ) : (
-              <div
-                className="p-12 rounded-2xl text-center"
-                style={{
-                  background: 'white',
-                  boxShadow: '-8px -8px 16px rgba(255, 255, 255, 0.8), 8px 8px 16px rgba(0, 0, 0, 0.1)',
-                }}
-              >
+              <div className="game-panel p-12 rounded-2xl text-center">
                 <Library className="w-16 h-16 mx-auto mb-4 text-[#6C6C70]" />
-                <h3 className="text-xl font-bold text-[#2C2C2E] mb-2">No books yet</h3>
+                <h3 className="font-game text-xl font-bold text-[#2C2C2E] mb-2">No books yet</h3>
                 <p className="text-[#6C6C70] mb-6">Start logging your reading journey!</p>
                 <Button
                   onClick={() => setShowAddBook(true)}
-                  className="bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white"
+                  className="game-panel bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game font-semibold border-2 border-[#7a6a9a]"
                 >
                   Add Your First Book
                 </Button>
@@ -296,63 +272,39 @@ export default function ReadSelfApp() {
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-6">
-            <h2 className="text-3xl font-bold text-[#2C2C2E] mb-6" style={{ fontFamily: 'serif' }}>
+            <h2 className="font-game text-3xl font-bold text-[#2C2C2E] mb-6 tracking-wide">
               Reading Statistics
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card
-                className="p-6"
-                style={{
-                  background: 'white',
-                  boxShadow: '-6px -6px 12px rgba(255, 255, 255, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.1)',
-                }}
-              >
+              <div className="game-panel p-6 rounded-2xl">
                 <BookOpen className="w-8 h-8 text-[#9B7EBD] mb-3" />
-                <div className="text-4xl font-bold text-[#2C2C2E] mb-1">
+                <div className="font-game text-4xl font-bold text-[#2C2C2E] mb-1 font-mono">
                   {data.character.totalBooksRead}
                 </div>
-                <div className="text-sm text-[#6C6C70]">Books Read</div>
-              </Card>
+                <div className="text-sm text-[#6C6C70] font-medium">Books Read</div>
+              </div>
 
-              <Card
-                className="p-6"
-                style={{
-                  background: 'white',
-                  boxShadow: '-6px -6px 12px rgba(255, 255, 255, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.1)',
-                }}
-              >
+              <div className="game-panel p-6 rounded-2xl">
                 <Clock className="w-8 h-8 text-[#A8C5A0] mb-3" />
-                <div className="text-4xl font-bold text-[#2C2C2E] mb-1">
+                <div className="font-game text-4xl font-bold text-[#2C2C2E] mb-1 font-mono">
                   {totalReadingHours}h {totalReadingMinutes}m
                 </div>
-                <div className="text-sm text-[#6C6C70]">Reading Time</div>
-              </Card>
+                <div className="text-sm text-[#6C6C70] font-medium">Reading Time</div>
+              </div>
 
-              <Card
-                className="p-6"
-                style={{
-                  background: 'white',
-                  boxShadow: '-6px -6px 12px rgba(255, 255, 255, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.1)',
-                }}
-              >
+              <div className="game-panel p-6 rounded-2xl">
                 <Sparkles className="w-8 h-8 text-[#E8B86D] mb-3" />
-                <div className="text-4xl font-bold text-[#2C2C2E] mb-1">
+                <div className="font-game text-4xl font-bold text-[#2C2C2E] mb-1 font-mono">
                   {data.character.currentLevel}
                 </div>
-                <div className="text-sm text-[#6C6C70]">Character Level</div>
-              </Card>
+                <div className="text-sm text-[#6C6C70] font-medium">Character Level</div>
+              </div>
             </div>
 
             {/* Attribute breakdown */}
-            <div
-              className="p-6 rounded-2xl"
-              style={{
-                background: 'white',
-                boxShadow: '-6px -6px 12px rgba(255, 255, 255, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              <h3 className="text-lg font-bold text-[#2C2C2E] mb-4">Attribute Levels</h3>
+            <div className="game-panel p-6 rounded-2xl">
+              <h3 className="font-game text-lg font-bold text-[#2C2C2E] mb-4">Attribute Levels</h3>
               <div className="space-y-4">
                 {Object.values(data.character.attributes).map((attr) => (
                   <div key={attr.name}>

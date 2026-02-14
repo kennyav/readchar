@@ -25,26 +25,23 @@ export function AttributeDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-[#F9F6F1] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="game-panel sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-4">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+              className="w-16 h-16 rounded-full flex items-center justify-center text-3xl border-2 border-[#2C2C2E]/10"
               style={{
                 background: '#F9F6F1',
-                boxShadow: `
-                  -4px -4px 8px rgba(255, 255, 255, 0.8),
-                  4px 4px 8px rgba(0, 0, 0, 0.1)
-                `,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.08)',
               }}
             >
               {attr.icon}
             </div>
             <div>
-              <DialogTitle className="text-3xl font-bold text-[#2C2C2E] capitalize" style={{ fontFamily: 'serif' }}>
+              <DialogTitle className="font-game text-3xl font-bold text-[#2C2C2E] capitalize tracking-wide">
                 {attribute}
               </DialogTitle>
-              <p className="text-[#6C6C70]">Level {attr.level}</p>
+              <p className="text-[#6C6C70] font-medium">Level {attr.level}</p>
             </div>
           </div>
         </DialogHeader>
