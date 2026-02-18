@@ -83,11 +83,12 @@ export default function ReadSelfApp() {
     );
   }
 
-  const handleAddBook = (bookData: { title: string; author: string; genre: Genre }) => {
+  const handleAddBook = (bookData: { title: string; author: string; genre: Genre; coverId: number }) => {
     const newBook: Book = {
       id: Date.now().toString(),
       title: bookData.title,
       author: bookData.author,
+      coverId: bookData.coverId,
       genre: bookData.genre,
       themes: [],
       dateAdded: new Date(),

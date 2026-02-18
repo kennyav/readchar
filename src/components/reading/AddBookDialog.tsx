@@ -154,7 +154,7 @@ import { BookSearchItem } from '@/components/reading/BookSearchItem'
 interface AddBookDialogProps {
   open: boolean
   onClose: () => void
-  onAdd: (book: { title: string; author: string; genre: Genre }) => void
+  onAdd: (book: { title: string; author: string; genre: Genre; coverId: number }) => void
 }
 
 const genres: Genre[] = [
@@ -181,6 +181,7 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [genre, setGenre] = useState<Genre>('Fiction')
+  const [coverId, setCoverId] = useState<number | null>(null)
 
   const { results, isSearching, hasSearched, search, clear } = useBookSearch()
 
@@ -209,7 +210,8 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
 
   const handleSelectBook = useCallback(
     (book: BookResult) => {
-      onAdd({ title: book.title, author: book.author, genre: book.genre })
+
+      onAdd({ title: book.title, author: book.author, genre: book.genre, coverId: book.coverId })
       reset()
       onClose()
     },
@@ -217,12 +219,12 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
   )
 
   const handleManualSubmit = useCallback(() => {
-    if (title && author && genre) {
-      onAdd({ title, author, genre })
+    if (title && author && genre && coverId) {
+      onAdd({ title, author, genre, coverId })
       reset()
       onClose()
     }
-  }, [title, author, genre, onAdd, reset, onClose])
+  }, [title, author, genre, coverId, onAdd, reset, onClose])
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

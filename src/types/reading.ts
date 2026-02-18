@@ -36,6 +36,7 @@ export interface Book {
   title: string;
   author: string;
   genre: Genre;
+  coverId: number;
   themes: string[];
   dateAdded: Date;
   attributeImpact: Partial<Record<AttributeType, number>>;

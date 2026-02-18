@@ -13,6 +13,10 @@ export function BookLogCard({ book, onClick }: BookLogCardProps) {
     .sort((a, b) => (b[1] || 0) - (a[1] || 0))
     .slice(0, 3);
 
+  const coverUrl = book.coverId
+    ? `https://covers.openlibrary.org/b/id/${book.coverId}-M.jpg`
+    : null
+
   return (
     <div
       className="game-panel p-6 rounded-2xl cursor-pointer transition-all hover:brightness-[1.02] active:scale-[0.99]"
@@ -21,7 +25,15 @@ export function BookLogCard({ book, onClick }: BookLogCardProps) {
       <div className="flex gap-4">
         {/* Book cover placeholder - inventory slot style */}
         <div className="flex-shrink-0 w-16 h-24 rounded-lg flex items-center justify-center border-2 border-[#9B7EBD]/40 bg-gradient-to-br from-[#9B7EBD] to-[#7a6a9a] shadow-inner">
-          <BookOpen className="w-8 h-8 text-white drop-shadow" />
+          {coverUrl ?
+            (<img
+              src={coverUrl}
+              alt={`Cover of ${book.title}`}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />)
+            :
+            (<BookOpen className="w-8 h-8 text-white drop-shadow" />)}
         </div>
 
         {/* Book details */}
