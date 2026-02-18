@@ -22,6 +22,7 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
             <div className="text-2xl font-bold text-[#2C2C2E]">{attr.name}</div>
             <div className=" flex flex-coltext-sm text-[#6C6C70]">{attr.value}/{attr.maxValue}
               {items.map((item, index) => (
+                // TODO: Make progress bar dynamic
                 <div key={index} className="w-1 h-1 bg-gray-200"></div>
               ))}
             </div>

@@ -10,7 +10,9 @@ import { AttributeDetailDialog } from '@/components/character/AttributeDetailDia
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Clock, Library, Sparkles, TrendingUp } from 'lucide-react';
+import { BookOpen, Clock, Library, LogOut, Sparkles, TrendingUp } from 'lucide-react';
+import { useAuthOptional } from '@/contexts/AuthContext';
+import { isAuthEnabled } from '@/lib/supabase';
 import {
   initializeCharacter,
   applyBookToCharacter,
@@ -29,6 +31,7 @@ interface AppData {
 }
 
 export default function ReadSelfApp() {
+  const auth = useAuthOptional();
   const [data, setData] = useState<AppData | null>(null);
   const [showAddBook, setShowAddBook] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
@@ -131,6 +134,19 @@ export default function ReadSelfApp() {
 
   return (
     <div className="min-h-screen">
+      {/* Sign out when auth is enabled */}
+      {isAuthEnabled && auth?.user && (
+        <div className="flex justify-end px-4 py-2 border-b border-[#2C2C2E]/10">
+          <button
+            type="button"
+            onClick={() => auth.signOut()}
+            className="flex items-center gap-2 text-sm text-[#6C6C70] hover:text-[#2C2C2E] font-game"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
+      )}
       {/* Evolution notification - achievement style */}
       <AnimatePresence>
         {showEvolution && (
