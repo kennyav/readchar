@@ -42,6 +42,17 @@ export interface Book {
   coverUrl?: string;
 }
 
+export interface BookResult {
+  key: string
+  title: string
+  author: string
+  coverId: number | null
+  firstPublishYear: number | null
+  genre: Genre
+  subjects: string[]
+}
+
+
 export interface ReadingSession {
   id: string;
   duration: number; // in seconds
