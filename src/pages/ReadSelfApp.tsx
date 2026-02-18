@@ -21,6 +21,9 @@ import {
   generateJournalEntry,
 } from '@/lib/character-engine';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAvatarIdentity } from '@/hooks/use-avatar-identity'
+import { ReadingAvatar } from '@/components/character/ReadingAvatar';
+import { GenreLegend } from '@/components/character/GenreLegend';
 
 const STORAGE_KEY = 'readself_data';
 
@@ -37,6 +40,9 @@ export default function ReadSelfApp() {
   const [showTimer, setShowTimer] = useState(false);
   const [selectedAttribute, setSelectedAttribute] = useState<AttributeType | null>(null);
   const [showEvolution, setShowEvolution] = useState(false);
+  const { seed, books, hydrated, addBook, removeBook } = useAvatarIdentity(data)
+  const isEmpty = books.length === 0
+
 
   // Load data from localStorage
   useEffect(() => {
@@ -191,7 +197,7 @@ export default function ReadSelfApp() {
 
           <TabsContent value="character" className="space-y-8">
             {/* Character display section */}
-            <div className="game-panel p-8 rounded-2xl">
+            {/* <div className="game-panel p-8 rounded-2xl">
               <div className="flex flex-col items-center">
                 <CharacterAvatar character={data.character} className="mb-6" />
                 <h2 className="font-game text-2xl font-bold text-[#2C2C2E] mb-2 tracking-wide">
@@ -199,15 +205,44 @@ export default function ReadSelfApp() {
                 </h2>
                 <p className="text-[#6C6C70] font-medium">Level {data.character.currentLevel}</p>
               </div>
-            </div>
+            </div> */}
+            <section className="mb-10 flex flex-col items-center">
+              <ReadingAvatar seed={seed} books={books} size={260} />
+
+              <div className="mt-6 text-center">
+                <h1
+                  className="text-balance text-3xl font-bold text-[#2C2C2E]"
+                  style={{ fontFamily: 'serif' }}
+                >
+                  Your Reading Avatar
+                </h1>
+                {isEmpty ? (
+                  <p className="mx-auto mt-2 max-w-xs text-sm text-[#6B6B6E]">
+                    Add your first book to bring your character to life. Each genre grants new gear and abilities.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-sm text-[#6B6B6E]">
+                    Level {Math.min(Math.max(Math.floor(Math.log2(books.length + 1) * 3.5), 1), 20)} {'  '}
+                    {books.length} book{books.length === 1 ? '' : 's'} collected
+                  </p>
+                )}
+              </div>
+
+              {/* Genre legend */}
+              {!isEmpty && (
+                <div className="mt-4">
+                  <GenreLegend books={books} />
+                </div>
+              )}
+            </section> 
 
             {/* Attribute constellation */}
             <div className="game-panel p-8 rounded-2xl flex flex-col min-h-[400px]">
               <div className="">
-              <AttributeConstellation
-                character={data.character}
-                onAttributeClick={setSelectedAttribute}
-              />
+                <AttributeConstellation
+                  character={data.character}
+                  onAttributeClick={setSelectedAttribute}
+                />
               </div>
             </div>
 
