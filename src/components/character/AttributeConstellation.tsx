@@ -17,18 +17,36 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
       {attributes.map((attr) => {
         const items = Array.from({ length: attr.maxValue });
         return (
-        <div key={attr.name} className="game-panel p-4 rounded-2xl">
-          <div className="flex flex-col items-center">
-            <div className="text-2xl font-bold text-[#2C2C2E]">{attr.name}</div>
-            <div className=" flex flex-coltext-sm text-[#6C6C70]">{attr.value}/{attr.maxValue}
-              {items.map((item, index) => (
-                // TODO: Make progress bar dynamic
-                <div key={index} className="w-1 h-1 bg-gray-200"></div>
-              ))}
+          <div key={attr.name} className="game-panel p-4 rounded-2xl">
+            <div className="flex flex-col items-center">
+
+              <div className="text-2xl font-bold text-[#2C2C2E]">
+                {attr.name}
+              </div>
+
+              {/* Stack value and maxValue */}
+              <div className="flex flex-col items-center text-sm text-[#6C6C70]">
+                <span>{attr.value}/{attr.maxValue}</span>
+              </div>
+
+              {/* Progress dots */}
+              <div className="flex mt-2">
+                {items.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`w-1 h-1 rounded-md ${index < Number(attr.value)
+                        ? "bg-green-500"
+                        : "bg-gray-200"
+                      }`}
+                  />
+                ))}
+              </div>
+
             </div>
           </div>
-        </div>
-        )})}
+
+        )
+      })}
     </div>
     // <div className="relative w-full h-full flex items-center justify-center">
     //   {/* Connection lines */}
@@ -48,7 +66,7 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
     //       const angle = index * angleStep - Math.PI / 2;
     //       const x2 = `calc(50% + ${radius * Math.cos(angle)}px)`;
     //       const y2 = `calc(50% + ${radius * Math.sin(angle)}px)`;
-          
+
     //       return (
     //         <line
     //           key={attr.name}
@@ -112,7 +130,7 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
     //               filter="url(#glow)"
     //             />
     //           </svg>
-              
+
     //           {/* Inner circle with icon */}
     //           <div
     //             className="absolute inset-2 rounded-full flex items-center justify-center text-2xl"
@@ -127,7 +145,7 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
     //           >
     //             {attr.icon}
     //           </div>
-              
+
     //           {/* Level badge - game style */}
     //           <div
     //             className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md text-xs font-mono font-bold text-white border border-black/20"
@@ -139,12 +157,12 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
     //             {attr.level}
     //           </div>
     //         </div>
-            
+
     //         {/* Attribute name */}
     //         <div className="mt-2 text-xs font-medium text-[#2C2C2E] capitalize text-center mb-1.5">
     //           {attr.name}
     //         </div>
-            
+
     //         {/* Progress bar - game style */}
     //         <div 
     //           className="w-24 h-3 rounded-sm border-2 overflow-hidden relative"
@@ -178,7 +196,7 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
     //               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"
     //             />
     //           </motion.div>
-              
+
     //           {/* Value text overlay */}
     //           <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] pointer-events-none">
     //             {attr.value}/{attr.maxValue}
