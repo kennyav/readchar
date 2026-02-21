@@ -1,14 +1,16 @@
 import { Book } from '@/types/reading';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, TrendingUp } from 'lucide-react';
+import { BookOpen, Trash, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { Button } from '../ui/button';
 
 interface BookLogCardProps {
   book: Book;
   onClick?: () => void;
+  onDelete?: (bookId: string) => void;
 }
 
-export function BookLogCard({ book, onClick }: BookLogCardProps) {
+export function BookLogCard({ book, onClick, onDelete }: BookLogCardProps) {
   const topAttributes = Object.entries(book.attributeImpact)
     .sort((a, b) => (b[1] || 0) - (a[1] || 0))
     .slice(0, 3);
@@ -55,7 +57,6 @@ export function BookLogCard({ book, onClick }: BookLogCardProps) {
               {book.genre}
             </Badge>
           </div>
-
           {/* Attribute impacts - stat gains style */}
           {topAttributes.length > 0 && (
             <div className="flex items-center gap-2 text-xs text-[#6C6C70] font-medium">
@@ -67,13 +68,30 @@ export function BookLogCard({ book, onClick }: BookLogCardProps) {
               ))}
             </div>
           )}
+
+
         </div>
 
-        {/* Date added */}
-        <div className="flex-shrink-0 text-xs text-[#6C6C70] font-mono">
-          {format(book.dateAdded, 'MMM d')}
+        {/* Right side: Date + Delete */}
+        <div className="flex-shrink-0 flex flex-col items-end justify-between">
+          <span className="text-xs text-[#6C6C70] font-mono">
+            {format(book.dateAdded, 'MMM d')}
+          </span>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-500 hover:text-red-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.(book.id);
+            }}
+          >
+            <Trash className="w-4 h-4" />
+          </Button>
         </div>
+
       </div>
-    </div>
+    </div >
   );
 }

@@ -1,11 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import type { BookResult } from "@/types/reading"
+import type { Book } from "@/types/reading"
 import { generateSeed, getSeed, persistSeed } from "@/lib/avatar-seed"
-import { CharacterState, Book } from '@/types/reading';
-
-const BOOKS_STORAGE_KEY = "reading-list-books"
+import { CharacterState } from '@/types/reading';
 
 interface AppData {
   character: CharacterState;
@@ -31,38 +29,17 @@ export function useAvatarIdentity(data: AppData) {
       persistSeed(storedSeed)
     }
     setSeed(storedSeed)
-
-    // TODO: Pull books from database or from somewhere that has them
-    try {
-      //const storedBooks = localStorage.getItem(BOOKS_STORAGE_KEY)
-      const storedBooks = data.books
-      if (storedBooks) {
-        setBooks(storedBooks)
-      }
-    } catch {
-      // Ignore parse errors
-    }
-
     setHydrated(true)
   }, [])
 
-  // Persist books whenever they change (after hydration)
+  // Keep books in sync with data.books changes
+  // This ensures the avatar updates when Supabase syncs in the background
   useEffect(() => {
-    if (!hydrated) return
-    localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(books))
-  }, [books, hydrated])
+    if (data?.books) {
+      setBooks(data.books)
+    }
+  }, [data?.books])
 
-  const addBook = useCallback((book: Book) => {
-    setBooks((prev) => {
-      // Avoid duplicates by key
-      if (prev.some((b) => b.id === book.id)) return prev
-      return [...prev, book]
-    })
-  }, [])
-
-  const removeBook = useCallback((bookKey: string) => {
-    setBooks((prev) => prev.filter((b) => b.id !== bookKey))
-  }, [])
 
   const resetIdentity = useCallback(() => {
     const newSeed = generateSeed()
@@ -74,8 +51,6 @@ export function useAvatarIdentity(data: AppData) {
     seed,
     books,
     hydrated,
-    addBook,
-    removeBook,
     resetIdentity,
   }
 }

@@ -16,6 +16,7 @@ export function BookSearchItem({ book, onSelect }: BookSearchItemProps) {
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-[#E8E0D4] bg-white p-3 transition-colors hover:bg-[#F5F0E8]">
+      {/* Cover image */}
       <div className="flex h-16 w-11 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-[#E8E0D4]">
         {coverUrl ? (
           <img
@@ -38,6 +39,7 @@ export function BookSearchItem({ book, onSelect }: BookSearchItemProps) {
         )}
       </div>
 
+      {/* Book info — min-w-0 allows truncate to work inside flex */}
       <div className="min-w-0 flex-1">
         <p
           className="truncate text-sm font-semibold text-[#2C2C2E]"
@@ -47,21 +49,22 @@ export function BookSearchItem({ book, onSelect }: BookSearchItemProps) {
         </p>
         <p className="truncate text-xs text-[#6B6B6E]">{book.author}</p>
         <div className="mt-1 flex items-center gap-2">
-          <span className="rounded-full bg-[#9B7EBD]/10 px-2 py-0.5 text-[10px] font-medium text-[#9B7EBD]">
+          <span className="truncate rounded-full bg-[#9B7EBD]/10 px-2 py-0.5 text-[10px] font-medium text-[#9B7EBD]">
             {book.genre}
           </span>
           {book.firstPublishYear && (
-            <span className="text-[10px] text-[#9B9B9E]">
+            <span className="shrink-0 text-[10px] text-[#9B9B9E]">
               {book.firstPublishYear}
             </span>
           )}
         </div>
       </div>
 
+      {/* Add button — shrink-0 prevents it from ever being squeezed */}
       <Button
         size="sm"
         onClick={() => onSelect(book)}
-        className="h-8 shrink-0 bg-[#9B7EBD] text-white hover:bg-[#8B6EAD]"
+        className="shrink-0 h-8 bg-[#9B7EBD] text-white hover:bg-[#8B6EAD]"
       >
         <Plus className="mr-1 h-3.5 w-3.5" />
         Add
