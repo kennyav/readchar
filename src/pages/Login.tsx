@@ -14,6 +14,36 @@ function isValidEmail(value: string): boolean {
   return value.length > 0 && EMAIL_REGEX.test(value.trim());
 }
 
+/**
+ * Converts raw Supabase error messages into friendly, user-readable ones.
+ */
+function getFriendlyError(message: string): string {
+  const msg = message.toLowerCase();
+  console.log(msg);
+
+  if (msg.includes('user already registered') || msg.includes('already been registered')) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (msg.includes('invalid login credentials') || msg.includes('invalid credentials')) {
+    return 'Incorrect email or password. Please try again.';
+  }
+  if (msg.includes('email not confirmed')) {
+    return 'Please check your email and confirm your account before signing in.';
+  }
+  if (msg.includes('too many requests') || msg.includes('rate limit')) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  if (msg.includes('password should be at least')) {
+    return 'Password must be at least 6 characters.';
+  }
+  if (msg.includes('unable to validate email address')) {
+    return 'Please enter a valid email address.';
+  }
+
+  // Fall back to the original message if we don't recognise it
+  return message;
+}
+
 export default function Login() {
   const { user, loading, signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
@@ -44,7 +74,7 @@ export default function Login() {
     setSubmitting(true);
     const { error: err } = await signIn(email, password);
     setSubmitting(false);
-    if (err) setError(err.message);
+    if (err) setError(getFriendlyError(err.message));
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -71,8 +101,11 @@ export default function Login() {
     setSubmitting(true);
     const { error: err } = await signUp(trimmedEmail, password);
     setSubmitting(false);
-    if (err) setError(err.message);
-    else setMessage('Check your email to confirm your account.');
+    if (err) {
+      setError(getFriendlyError(err.message));
+    } else {
+      setMessage('Check your email to confirm your account.');
+    }
   };
 
   return (
@@ -85,13 +118,22 @@ export default function Login() {
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="game-panel grid w-full grid-cols-2 rounded-xl p-1 mb-4">
-              <TabsTrigger value="signin" className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white">
+              <TabsTrigger
+                value="signin"
+                className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white"
+                onClick={() => { setError(null); setMessage(null); }}
+              >
                 Sign in
               </TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white">
+              <TabsTrigger
+                value="signup"
+                className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white"
+                onClick={() => { setError(null); setMessage(null); }}
+              >
                 Sign up
               </TabsTrigger>
             </TabsList>
+
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -139,6 +181,7 @@ export default function Login() {
                 </Button>
               </form>
             </TabsContent>
+
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
@@ -178,7 +221,28 @@ export default function Login() {
                     </button>
                   </div>
                 </div>
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-red-600">{error}</p>
+                    {/* If the email already exists, offer a shortcut to switch to sign in */}
+                    {error.includes('already exists') && (
+                      <p className="text-sm text-[#6C6C70]">
+                        Already have an account?{' '}
+                        <button
+                          type="button"
+                          className="text-[#9B7EBD] underline font-medium"
+                          onClick={() => {
+                            setError(null);
+                            // Switch to sign in tab by targeting the trigger
+                            document.querySelector<HTMLButtonElement>('[value="signin"]')?.click();
+                          }}
+                        >
+                          Sign in instead
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                )}
                 {message && <p className="text-sm text-green-600">{message}</p>}
                 <Button
                   type="submit"

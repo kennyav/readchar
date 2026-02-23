@@ -9,6 +9,7 @@ type AuthState = {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signUp,
     signOut,
+    signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -74,3 +76,13 @@ export function useAuth(): AuthState {
 export function useAuthOptional(): AuthState | null {
   return useContext(AuthContext);
 }
+
+const signInWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/`,
+    },
+  });
+  return { error: error ?? null };
+};
