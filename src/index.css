@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
   @tailwind components;
@@ -36,26 +36,32 @@
 
       --radius: 0.5rem;
 
-      /* Game UI */
+      /* Datafa.st-inspired: minimal, metric-focused, one accent */
+      --reading-bg: 0 0% 98%;
+      --reading-bg-deep: 0 0% 96%;
+      --reading-surface: 0 0% 100%;
+      --reading-surface-soft: 0 0% 99%;
+      --reading-ink: 220 15% 15%;
+      --reading-ink-muted: 220 10% 45%;
+      --reading-accent: 142 71% 45%;
+      --reading-accent-soft: 142 40% 95%;
+      --reading-secondary: 220 14% 96%;
+      --reading-border: 220 13% 91%;
+      --reading-shadow: 220 15% 20%;
+
+      /* Game UI (legacy, still used by some components) */
       --game-panel-border: 260 15% 30%;
       --game-panel-bg: 40 25% 98%;
       --game-glow: 262 52% 47%;
       --game-gold: 43 74% 49%;
 
       --sidebar-background: 0 0% 98%;
-
       --sidebar-foreground: 240 5.3% 26.1%;
-
       --sidebar-primary: 240 5.9% 10%;
-
       --sidebar-primary-foreground: 0 0% 98%;
-
       --sidebar-accent: 240 4.8% 95.9%;
-
       --sidebar-accent-foreground: 240 5.9% 10%;
-
       --sidebar-border: 220 13% 91%;
-
       --sidebar-ring: 217.2 91.2% 59.8%;
     }
 
@@ -102,18 +108,43 @@
     * {
       @apply border-border;
     }
+    ::selection {
+      background: hsl(var(--reading-accent) / 0.25);
+      color: hsl(var(--reading-ink));
+    }
     body {
-      @apply bg-background text-foreground;
-      font-family: 'Outfit', system-ui, sans-serif;
+      background: hsl(var(--reading-bg));
+      color: hsl(var(--reading-ink));
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Game-style headings */
+    /* Unified minimal typography (datafa.st-style) */
+    .font-reading-heading {
+      font-family: 'Inter', system-ui, sans-serif;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
     .font-game {
-      font-family: 'Outfit', system-ui, sans-serif;
-      letter-spacing: 0.02em;
+      font-family: 'Inter', system-ui, sans-serif;
+      letter-spacing: 0;
     }
 
-    /* Game UI panel style (use .game-panel on containers) */
+    /* Clean metric-style cards */
+    .reading-card {
+      background: hsl(var(--reading-surface));
+      border: 1px solid hsl(var(--reading-border));
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px hsl(var(--reading-shadow) / 0.04);
+    }
+    .reading-card-soft {
+      background: hsl(var(--reading-surface-soft));
+      border: 1px solid hsl(var(--reading-border));
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px hsl(var(--reading-shadow) / 0.03);
+    }
+
+    /* Game UI panel (legacy) */
     .game-panel {
       background: hsl(var(--game-panel-bg));
       border: 2px solid hsl(var(--game-panel-border));
@@ -123,7 +154,7 @@
         0 6px 12px rgba(0, 0, 0, 0.08);
     }
     
-    /* Subtle game-world background: soft gradient + very light grid */
+    /* Minimal flat background (datafa.st-style, no grid) */
     body::before {
       content: '';
       position: fixed;
@@ -131,24 +162,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: 
-        linear-gradient(165deg, #f5f1ec 0%, #ebe6e0 50%, #e8e3dd 100%);
+      background: hsl(var(--reading-bg));
       pointer-events: none;
       z-index: -2;
-    }
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: 
-        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-      background-size: 24px 24px;
-      pointer-events: none;
-      z-index: -1;
     }
   }
 

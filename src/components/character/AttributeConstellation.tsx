@@ -17,15 +17,15 @@ export function AttributeConstellation({ character, onAttributeClick }: Attribut
       {attributes.map((attr) => {
         const items = Array.from({ length: attr.maxValue });
         return (
-          <div key={attr.name} className="game-panel p-4 rounded-2xl">
+          <div key={attr.name} className="reading-card-soft p-4 rounded-xl border border-[hsl(var(--reading-border))]">
             <div className="flex flex-col items-center">
 
-              <div className="text-2xl font-bold text-[#2C2C2E]">
+              <div className="text-2xl font-bold text-[hsl(var(--reading-ink))]">
                 {attr.name}
               </div>
 
               {/* Stack value and maxValue */}
-              <div className="flex flex-col items-center text-sm text-[#6C6C70]">
+              <div className="flex flex-col items-center text-sm text-[hsl(var(--reading-ink-muted))]">
                 <span>{attr.value}/{attr.maxValue}</span>
               </div>
 

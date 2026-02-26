@@ -10,7 +10,7 @@ import { CharacterState, Book, AttributeType, Genre } from '@/types/reading';
 
 const STORAGE_KEY = 'readself_data';
 
-interface AppData {
+export interface AppData {
   character: CharacterState;
   books: Book[];
   onboarded: boolean;
