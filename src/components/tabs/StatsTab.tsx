@@ -1,21 +1,29 @@
 import { AppData } from '@/hooks/use-app-data'
 import { BookOpen, Clock, Sparkles } from 'lucide-react'
 import React from 'react'
+import { motion } from 'framer-motion'
 
 interface StatsTabProps {
-   data: AppData,
-   totalReadingHours: number,
+   data: AppData
+   totalReadingHours: number
    totalReadingMinutes: number
+   isActive: boolean
 }
 
-export default function StatsTab({data, totalReadingHours, totalReadingMinutes}: StatsTabProps) {
+export default function StatsTab({ data, totalReadingHours, totalReadingMinutes, isActive }: StatsTabProps) {
    return (
-      <div>
+      <motion.div
+         key={isActive ? 'active' : 'inactive'}
+         initial={{ opacity: 0, y: -24 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+         className="space-y-6"
+      >
          <h2 className="font-reading-heading text-xl text-[hsl(var(--reading-ink))] mb-4">
             Reading stats
          </h2>
 
-         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
             <div className="reading-card p-5 rounded-xl">
                <div className="text-2xl font-semibold tabular-nums text-[hsl(var(--reading-ink))]">
                   {data.character.totalBooksRead}
@@ -68,6 +76,6 @@ export default function StatsTab({data, totalReadingHours, totalReadingMinutes}:
                ))}
             </div>
          </div>
-      </div>
+      </motion.div>
    )
 }

@@ -87,3 +87,35 @@ export interface OnboardingAnswers {
   readingGoal: 'casual' | 'moderate' | 'avid';
   preferredAttributes: AttributeType[];
 }
+
+// ── Pet system (Option 2: stored companion) ──
+
+export type PetStage = 'egg' | 'hatchling' | 'adult';
+
+export interface PetTraits {
+  /** Body type: 0=blob, 1=quadruped, 2=winged */
+  bodyType: number;
+  /** Primary color (hex) */
+  primaryColor: string;
+  /** Secondary color (hex) */
+  secondaryColor: string;
+  /** Markings: 0=none, 1=spots, 2=stripes */
+  markingStyle: number;
+  /** Eye style: 0=dot, 1=wide, 2=closed happy */
+  eyeStyle: number;
+  /** Accessory from dominant genre (e.g. tiny hat, scarf) — optional key */
+  accessory: string | null;
+}
+
+export interface Pet {
+  id: string;
+  /** Deterministic identity; same seed = same base look */
+  seed: string;
+  name: string;
+  stage: PetStage;
+  traits: PetTraits;
+  /** When this pet was first created */
+  createdAt: Date;
+  /** When stage or traits last changed */
+  lastEvolvedAt: Date;
+}

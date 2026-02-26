@@ -1,18 +1,26 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 import { Button } from '../ui/button'
 import { BookOpen, Library } from 'lucide-react'
 import { BookLogCard } from '../reading/BookLogCard'
 import { AppData } from '@/hooks/use-app-data'
 
 interface LibraryTabProps {
-   data: AppData,
-   setShowAddBook: (show: boolean) => void,
+   data: AppData
+   setShowAddBook: (show: boolean) => void
    removeBook: (bookId: string) => void
+   isActive: boolean
 }
 
-export default function LibraryTab({data, setShowAddBook, removeBook}: LibraryTabProps) {
+export default function LibraryTab({ data, setShowAddBook, removeBook, isActive }: LibraryTabProps) {
    return (
-      <div>
+      <motion.div
+         key={isActive ? 'active' : 'inactive'}
+         initial={{ opacity: 0, y: -24 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+         className="space-y-6"
+      >
          <div className="flex items-center justify-between mb-4">
             <h2 className="font-reading-heading text-xl text-[hsl(var(--reading-ink))]">
                Your library
@@ -49,6 +57,6 @@ export default function LibraryTab({data, setShowAddBook, removeBook}: LibraryTa
                </Button>
             </div>
          )}
-      </div>
+      </motion.div>
    )
 }

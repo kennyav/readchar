@@ -6,7 +6,9 @@ import {
   applyBookToCharacter,
   applyReadingSession,
 } from '@/lib/character-engine';
-import { CharacterState, Book, AttributeType, Genre } from '@/types/reading';
+import { CharacterState, Book, AttributeType, Genre, Pet } from '@/types/reading';
+import { getSeed } from '@/lib/avatar-seed';
+import { createInitialPet, evolvePetIfNeeded } from '@/lib/pet-engine';
 
 const STORAGE_KEY = 'readself_data';
 
@@ -14,6 +16,7 @@ export interface AppData {
   character: CharacterState;
   books: Book[];
   onboarded: boolean;
+  pet: Pet | null;
 }
 
 function loadFromStorage(): AppData | null {
@@ -25,6 +28,11 @@ function loadFromStorage(): AppData | null {
       ...book,
       dateAdded: new Date(book.dateAdded),
     }));
+    if (parsed.pet) {
+      parsed.pet.createdAt = new Date(parsed.pet.createdAt);
+      parsed.pet.lastEvolvedAt = new Date(parsed.pet.lastEvolvedAt);
+    }
+    if (parsed.pet === undefined) parsed.pet = null;
     return parsed;
   } catch {
     return null;
@@ -72,6 +80,31 @@ function bookToDbRow(book: Book, userId: string) {
   };
 }
 
+function dbRowToPet(row: any): Pet {
+  return {
+    id: row.id,
+    seed: row.seed,
+    name: row.name ?? 'Companion',
+    stage: row.stage,
+    traits: row.traits ?? {},
+    createdAt: new Date(row.created_at ?? row.createdAt),
+    lastEvolvedAt: new Date(row.last_evolved_at ?? row.lastEvolvedAt),
+  };
+}
+
+function petToDbRow(pet: Pet, userId: string) {
+  return {
+    id: pet.id,
+    user_id: userId,
+    seed: pet.seed,
+    name: pet.name,
+    stage: pet.stage,
+    traits: pet.traits,
+    created_at: pet.createdAt.toISOString(),
+    last_evolved_at: pet.lastEvolvedAt.toISOString(),
+  };
+}
+
 export function useAppData() {
   const auth = useAuthOptional();
   const userId = auth?.user?.id ?? null;
@@ -96,8 +129,20 @@ export function useAppData() {
         character: initializeCharacter(),
         books: [],
         onboarded: false,
+        pet: null,
       });
     }
+  }, []);
+
+  // Ensure pet exists when we have data but no pet (local-only or first run)
+  useEffect(() => {
+    setData((prev) => {
+      if (!prev || prev.pet) return prev;
+      const seed = getSeed();
+      if (!seed) return prev;
+      const pet = createInitialPet(seed, prev.character, prev.books);
+      return { ...prev, pet };
+    });
   }, []);
 
   // Background sync: fetch real data from Supabase and merge it in
@@ -107,8 +152,8 @@ export function useAppData() {
     const syncFromSupabase = async () => {
       setSyncing(true);
       try {
-        // Fetch books and character in parallel
-        const [booksRes, characterRes] = await Promise.all([
+        // Fetch books, character, and pet in parallel
+        const [booksRes, characterRes, petsRes] = await Promise.all([
           supabase
             .from('books')
             .select('*')
@@ -119,44 +164,67 @@ export function useAppData() {
             .select('*')
             .eq('user_id', userId)
             .single(),
+          supabase
+            .from('pets')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle(),
         ]);
 
         if (booksRes.error) throw booksRes.error;
         if (characterRes.error && characterRes.error.code !== 'PGRST116') {
-          // PGRST116 = no rows found, which is fine for new users
           throw characterRes.error;
         }
+        // Pets table might not exist yet; treat as no pet
+        const petRow = petsRes.error ? null : petsRes.data;
+        const existingPet = petRow ? dbRowToPet(petRow) : null;
 
         const dbBooks: Book[] = (booksRes.data ?? []).map(dbBookToBook);
 
         // Rebuild character state from DB books so it stays consistent
         let character = initializeCharacter();
-        // Apply books in chronological order so attribute math is correct
         [...dbBooks].reverse().forEach((book) => {
           character = applyBookToCharacter(character, book);
         });
 
-        // Merge: prefer DB data but fall back to localStorage if DB is empty
-        // and localStorage has data (e.g. user added books before logging in)
         const localData = loadFromStorage();
         const hasLocalBooks = (localData?.books?.length ?? 0) > 0;
         const hasDbBooks = dbBooks.length > 0;
 
         if (!hasDbBooks && hasLocalBooks && localData) {
-          // User has local data but nothing in DB yet — push local books up
           await pushLocalBooksToSupabase(localData.books, userId);
-          // Keep local state as-is, it's already correct
-        } else {
-          // DB is the source of truth — update local state
-          setData((prev) => ({
-            ...prev,
-            character,
-            books: dbBooks,
-          }));
+          // Keep local state; still need to merge pet if we have one from DB
+          if (existingPet) {
+            const { pet: evolvedPet, didEvolve } = evolvePetIfNeeded(existingPet, localData.character, localData.books);
+            setData((prev) => (prev ? { ...prev, pet: evolvedPet } : prev));
+            if (didEvolve) await upsertPet(evolvedPet, userId);
+          }
+          return;
         }
+
+        // DB is source of truth: set character + books
+        let pet = existingPet;
+        if (!pet) {
+          const seed = getSeed();
+          if (seed) {
+            pet = createInitialPet(seed, character, dbBooks);
+            await upsertPet(pet, userId);
+          }
+        }
+        if (pet) {
+          const { pet: evolvedPet, didEvolve } = evolvePetIfNeeded(pet, character, dbBooks);
+          pet = evolvedPet;
+          if (didEvolve) await upsertPet(pet, userId);
+        }
+
+        setData((prev) => ({
+          ...prev,
+          character,
+          books: dbBooks,
+          pet,
+        }));
       } catch (err) {
         console.error('Background sync failed:', err);
-        // Silently fail — localStorage data is still shown
       } finally {
         setSyncing(false);
       }
@@ -193,18 +261,26 @@ export function useAppData() {
         if (impact > 0) newBook.attributeImpact[attr as AttributeType] = impact;
       });
 
+      const newBooks = [newBook, ...data.books];
+      const seed = getSeed();
+      let pet = data.pet ?? (seed ? createInitialPet(seed, updatedCharacter, newBooks) : null);
+      if (pet) {
+        const result = evolvePetIfNeeded(pet, updatedCharacter, newBooks);
+        pet = result.pet;
+      }
+
       // Optimistic update — localStorage + state updated immediately
       setData((prev) => ({
         ...prev,
         character: updatedCharacter,
-        books: [newBook, ...prev.books],
+        books: newBooks,
+        pet,
       }));
 
       // Background write to Supabase
       if (isAuthEnabled && userId) {
         try {
           await supabase.from('books').insert(bookToDbRow(newBook, userId));
-          // Update character stats in DB
           await supabase
             .from('characters')
             .update({
@@ -213,9 +289,9 @@ export function useAppData() {
               total_reading_time: updatedCharacter.totalReadingTime,
             })
             .eq('user_id', userId);
+          if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to save book to Supabase:', err);
-          // Don't revert — localStorage has it, will sync next time
         }
       }
 
@@ -239,11 +315,19 @@ export function useAppData() {
         character = applyBookToCharacter(character, book);
       });
 
+      const seed = getSeed();
+      let pet = data.pet ?? (seed ? createInitialPet(seed, character, remainingBooks) : null);
+      if (pet) {
+        const result = evolvePetIfNeeded(pet, character, remainingBooks);
+        pet = result.pet;
+      }
+
       // Optimistic update
       setData((prev) => ({
         ...prev,
         character,
         books: remainingBooks,
+        pet,
       }));
 
       // Background delete from Supabase
@@ -258,6 +342,7 @@ export function useAppData() {
               total_reading_time: character.totalReadingTime,
             })
             .eq('user_id', userId);
+          if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to delete book from Supabase:', err);
         }
@@ -271,11 +356,18 @@ export function useAppData() {
       if (!data) return;
 
       const updatedCharacter = applyReadingSession(data.character, minutes);
+      const seed = getSeed();
+      let pet = data.pet ?? (seed ? createInitialPet(seed, updatedCharacter, data.books) : null);
+      if (pet) {
+        const result = evolvePetIfNeeded(pet, updatedCharacter, data.books);
+        pet = result.pet;
+      }
 
       // Optimistic update
       setData((prev) => ({
         ...prev,
         character: updatedCharacter,
+        pet,
       }));
 
       // Background write to Supabase
@@ -296,6 +388,7 @@ export function useAppData() {
               })
               .eq('user_id', userId),
           ]);
+          if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to save session to Supabase:', err);
         }
@@ -306,8 +399,17 @@ export function useAppData() {
 
   const completeOnboarding = useCallback(() => {
     setData((prev) => ({ ...prev, onboarded: true }));
-    // You can extend this to save onboarding answers to profiles table here
   }, []);
+
+  const updatePetName = useCallback(
+    async (name: string) => {
+      if (!data?.pet) return;
+      const pet = { ...data.pet, name };
+      setData((prev) => (prev ? { ...prev, pet } : prev));
+      if (isAuthEnabled && userId) await upsertPet(pet, userId);
+    },
+    [data?.pet, userId]
+  );
 
   return {
     data,
@@ -316,6 +418,7 @@ export function useAppData() {
     removeBook,
     completeSession,
     completeOnboarding,
+    updatePetName,
   };
 }
 
@@ -329,5 +432,15 @@ async function pushLocalBooksToSupabase(books: Book[], userId: string) {
       .upsert(books.map((b) => bookToDbRow(b, userId)), { onConflict: 'id' });
   } catch (err) {
     console.error('Failed to push local books to Supabase:', err);
+  }
+}
+
+async function upsertPet(pet: Pet, userId: string) {
+  try {
+    await supabase.from('pets').upsert(petToDbRow(pet, userId), {
+      onConflict: 'user_id',
+    });
+  } catch (err) {
+    console.error('Failed to upsert pet to Supabase:', err);
   }
 }
