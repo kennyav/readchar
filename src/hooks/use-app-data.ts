@@ -152,18 +152,13 @@ export function useAppData() {
     const syncFromSupabase = async () => {
       setSyncing(true);
       try {
-        // Fetch books, character, and pet in parallel
-        const [booksRes, characterRes, petsRes] = await Promise.all([
+        // Fetch books and pet in parallel
+        const [booksRes, petsRes] = await Promise.all([
           supabase
             .from('books')
             .select('*')
             .eq('user_id', userId)
             .order('date_added', { ascending: false }),
-          supabase
-            .from('characters')
-            .select('*')
-            .eq('user_id', userId)
-            .single(),
           supabase
             .from('pets')
             .select('*')
@@ -172,9 +167,6 @@ export function useAppData() {
         ]);
 
         if (booksRes.error) throw booksRes.error;
-        if (characterRes.error && characterRes.error.code !== 'PGRST116') {
-          throw characterRes.error;
-        }
         // Pets table might not exist yet; treat as no pet
         const petRow = petsRes.error ? null : petsRes.data;
         const existingPet = petRow ? dbRowToPet(petRow) : null;
@@ -195,7 +187,11 @@ export function useAppData() {
           await pushLocalBooksToSupabase(localData.books, userId);
           // Keep local state; still need to merge pet if we have one from DB
           if (existingPet) {
-            const { pet: evolvedPet, didEvolve } = evolvePetIfNeeded(existingPet, localData.character, localData.books);
+            const { pet: evolvedPet, didEvolve } = evolvePetIfNeeded(
+              existingPet,
+              localData.character,
+              localData.books
+            );
             setData((prev) => (prev ? { ...prev, pet: evolvedPet } : prev));
             if (didEvolve) await upsertPet(evolvedPet, userId);
           }
@@ -281,14 +277,6 @@ export function useAppData() {
       if (isAuthEnabled && userId) {
         try {
           await supabase.from('books').insert(bookToDbRow(newBook, userId));
-          await supabase
-            .from('characters')
-            .update({
-              current_level: updatedCharacter.currentLevel,
-              total_books_read: updatedCharacter.totalBooksRead,
-              total_reading_time: updatedCharacter.totalReadingTime,
-            })
-            .eq('user_id', userId);
           if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to save book to Supabase:', err);
@@ -334,14 +322,6 @@ export function useAppData() {
       if (isAuthEnabled && userId) {
         try {
           await supabase.from('books').delete().eq('id', bookId).eq('user_id', userId);
-          await supabase
-            .from('characters')
-            .update({
-              current_level: character.currentLevel,
-              total_books_read: character.totalBooksRead,
-              total_reading_time: character.totalReadingTime,
-            })
-            .eq('user_id', userId);
           if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to delete book from Supabase:', err);
@@ -380,13 +360,6 @@ export function useAppData() {
               user_id: userId,
               minutes,
             }),
-            supabase
-              .from('characters')
-              .update({
-                current_level: updatedCharacter.currentLevel,
-                total_reading_time: updatedCharacter.totalReadingTime,
-              })
-              .eq('user_id', userId),
           ]);
           if (pet) await upsertPet(pet, userId);
         } catch (err) {
