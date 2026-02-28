@@ -98,27 +98,24 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden bg-[#F9F6F1] sm:max-w-lg">
+      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden bg-[hsl(var(--reading-bg))] border-[hsl(var(--reading-border))] rounded-xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle
-            className="text-2xl font-bold text-[#2C2C2E]"
-            style={{ fontFamily: 'serif' }}
-          >
+          <DialogTitle className="text-2xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
             Add a Book
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#6B6B6E]">
+          <DialogDescription className="text-sm text-[hsl(var(--reading-ink-muted))]">
             Search the Open Library or add a book manually.
           </DialogDescription>
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex gap-1 rounded-lg bg-[#E8E0D4]/60 p-1">
+        <div className="flex gap-1 rounded-lg reading-card-soft p-1 border border-[hsl(var(--reading-border))]">
           <button
             onClick={() => setTab('search')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium font-game transition-colors ${
               tab === 'search'
-                ? 'bg-white text-[#2C2C2E] shadow-sm'
-                : 'text-[#6B6B6E] hover:text-[#2C2C2E]'
+                ? 'bg-[hsl(var(--reading-accent-soft))] text-[hsl(var(--reading-ink))] shadow-sm'
+                : 'text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))]'
             }`}
           >
             <Search className="h-3.5 w-3.5" />
@@ -126,10 +123,10 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
           </button>
           <button
             onClick={() => setTab('manual')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium font-game transition-colors ${
               tab === 'manual'
-                ? 'bg-white text-[#2C2C2E] shadow-sm'
-                : 'text-[#6B6B6E] hover:text-[#2C2C2E]'
+                ? 'bg-[hsl(var(--reading-accent-soft))] text-[hsl(var(--reading-ink))] shadow-sm'
+                : 'text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))]'
             }`}
           >
             <BookOpen className="h-3.5 w-3.5" />
@@ -141,13 +138,12 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
         {tab === 'search' && (
           <div className="flex min-h-0 flex-1 flex-col gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9B9B9E]" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(var(--reading-ink-muted))]" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, author, or ISBN..."
-                className="bg-white pl-9"
-                style={{ boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.1)' }}
+                className="reading-card bg-[hsl(var(--reading-surface))] border-[hsl(var(--reading-border))] pl-9"
                 autoFocus
               />
             </div>
@@ -157,21 +153,21 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
               <div className="space-y-2">
                 {isSearching && (
                   <div className="flex flex-col items-center justify-center py-10">
-                    <Loader2 className="h-6 w-6 animate-spin text-[#9B7EBD]" />
-                    <p className="mt-2 text-sm text-[#6B6B6E]">Searching Open Library...</p>
+                    <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--reading-accent))]" />
+                    <p className="mt-2 text-sm text-[hsl(var(--reading-ink-muted))]">Searching Open Library...</p>
                   </div>
                 )}
 
                 {!isSearching && hasSearched && results.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-10">
-                    <BookOpen className="h-8 w-8 text-[#9B9B9E]/50" />
-                    <p className="mt-2 text-sm text-[#6B6B6E]">
+                    <BookOpen className="h-8 w-8 text-[hsl(var(--reading-ink-muted))]/50" />
+                    <p className="mt-2 text-sm text-[hsl(var(--reading-ink-muted))]">
                       No books found. Try a different search.
                     </p>
                     <Button
                       variant="link"
                       onClick={() => setTab('manual')}
-                      className="mt-1 text-[#9B7EBD]"
+                      className="mt-1 text-[hsl(var(--reading-accent))]"
                     >
                       Add manually instead
                     </Button>
@@ -180,8 +176,8 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
 
                 {!isSearching && !hasSearched && (
                   <div className="flex flex-col items-center justify-center py-10">
-                    <Search className="h-8 w-8 text-[#9B9B9E]/50" />
-                    <p className="mt-2 text-sm text-[#6B6B6E]">
+                    <Search className="h-8 w-8 text-[hsl(var(--reading-ink-muted))]/50" />
+                    <p className="mt-2 text-sm text-[hsl(var(--reading-ink-muted))]">
                       Start typing to search millions of books
                     </p>
                   </div>
@@ -204,7 +200,7 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
         {tab === 'manual' && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title" className="font-medium text-[#2C2C2E]">
+              <Label htmlFor="title" className="font-medium text-[hsl(var(--reading-ink))]">
                 Title
               </Label>
               <Input
@@ -212,13 +208,12 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter book title"
-                className="bg-white"
-                style={{ boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.1)' }}
+                className="reading-card bg-[hsl(var(--reading-surface))] border-[hsl(var(--reading-border))]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="author" className="font-medium text-[#2C2C2E]">
+              <Label htmlFor="author" className="font-medium text-[hsl(var(--reading-ink))]">
                 Author
               </Label>
               <Input
@@ -226,17 +221,16 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Enter author name"
-                className="bg-white"
-                style={{ boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.1)' }}
+                className="reading-card bg-[hsl(var(--reading-surface))] border-[hsl(var(--reading-border))]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="genre" className="font-medium text-[#2C2C2E]">
+              <Label htmlFor="genre" className="font-medium text-[hsl(var(--reading-ink))]">
                 Genre
               </Label>
               <Select value={genre} onValueChange={(value) => setGenre(value as Genre)}>
-                <SelectTrigger className="bg-white">
+                <SelectTrigger className="reading-card bg-[hsl(var(--reading-surface))] border-[hsl(var(--reading-border))]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,13 +244,17 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <Button variant="outline" onClick={handleClose} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1 border-[hsl(var(--reading-border))] text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))] font-game"
+              >
                 Cancel
               </Button>
               <Button
                 onClick={handleManualSubmit}
                 disabled={!title || !author}
-                className="flex-1 bg-[#9B7EBD] text-white hover:bg-[#8B6EAD]"
+                className="flex-1 reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white border-0 font-game"
               >
                 Add Book
               </Button>

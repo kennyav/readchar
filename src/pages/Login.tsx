@@ -19,7 +19,6 @@ function isValidEmail(value: string): boolean {
  */
 function getFriendlyError(message: string): string {
   const msg = message.toLowerCase();
-  console.log(msg);
 
   if (msg.includes('user already registered') || msg.includes('already been registered')) {
     return 'An account with this email already exists. Try signing in instead.';
@@ -56,8 +55,8 @@ export default function Login() {
   if (!isAuthEnabled) return <Navigate to="/" replace />;
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="font-game text-xl text-[#6C6C70]">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--reading-bg))]">
+        <div className="font-reading-heading text-xl text-[hsl(var(--reading-ink-muted))]">Loading...</div>
       </div>
     );
   }
@@ -109,25 +108,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="game-panel w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[hsl(var(--reading-bg))]">
+      <Card className="reading-card w-full max-w-md border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]">
         <CardHeader className="text-center">
-          <CardTitle className="font-game text-2xl">ReadSelf</CardTitle>
-          <CardDescription>Sign in or create an account to continue</CardDescription>
+          <CardTitle className="font-reading-heading text-2xl text-[hsl(var(--reading-ink))]">ReadSelf</CardTitle>
+          <CardDescription className="text-[hsl(var(--reading-ink-muted))]">Sign in or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="game-panel grid w-full grid-cols-2 rounded-xl p-1 mb-4">
+            <TabsList className="reading-card-soft grid w-full grid-cols-2 rounded-xl p-1.5 mb-4 border border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface-soft))]">
               <TabsTrigger
                 value="signin"
-                className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white"
+                className="flex h-full w-full items-center justify-center rounded-lg font-game data-[state=active]:bg-[hsl(var(--reading-accent-soft))] data-[state=active]:text-[hsl(var(--reading-ink))] data-[state=active]:shadow-sm"
                 onClick={() => { setError(null); setMessage(null); }}
               >
                 Sign in
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-lg font-game data-[state=active]:bg-[#9B7EBD] data-[state=active]:text-white"
+                className="flex h-full w-full items-center justify-center rounded-lg font-game data-[state=active]:bg-[hsl(var(--reading-accent-soft))] data-[state=active]:text-[hsl(var(--reading-ink))] data-[state=active]:shadow-sm"
                 onClick={() => { setError(null); setMessage(null); }}
               >
                 Sign up
@@ -137,7 +136,7 @@ export default function Login() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="font-medium text-[hsl(var(--reading-ink))]">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -146,11 +145,11 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    className="font-game"
+                    className="font-game border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="font-medium text-[hsl(var(--reading-ink))]">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -159,12 +158,12 @@ export default function Login() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       autoComplete="current-password"
-                      className="font-game pr-10"
+                      className="font-game pr-10 border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6C6C70] hover:text-[#2C2C2E] p-1"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] p-1"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -174,7 +173,7 @@ export default function Login() {
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <Button
                   type="submit"
-                  className="game-panel w-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game border-2 border-[#7a6a9a]"
+                  className="w-full reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white font-game border-0"
                   disabled={submitting}
                 >
                   {submitting ? 'Signing in...' : 'Sign in'}
@@ -185,7 +184,7 @@ export default function Login() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="font-medium text-[hsl(var(--reading-ink))]">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -194,11 +193,11 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    className="font-game"
+                    className="font-game border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="font-medium text-[hsl(var(--reading-ink))]">Password</Label>
                   <div className="relative">
                     <Input
                       id="signup-password"
@@ -209,12 +208,12 @@ export default function Login() {
                       required
                       minLength={6}
                       autoComplete="new-password"
-                      className="font-game pr-10"
+                      className="font-game pr-10 border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6C6C70] hover:text-[#2C2C2E] p-1"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] p-1"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -224,16 +223,14 @@ export default function Login() {
                 {error && (
                   <div className="space-y-1">
                     <p className="text-sm text-red-600">{error}</p>
-                    {/* If the email already exists, offer a shortcut to switch to sign in */}
                     {error.includes('already exists') && (
-                      <p className="text-sm text-[#6C6C70]">
+                      <p className="text-sm text-[hsl(var(--reading-ink-muted))]">
                         Already have an account?{' '}
                         <button
                           type="button"
-                          className="text-[#9B7EBD] underline font-medium"
+                          className="text-[hsl(var(--reading-accent))] underline font-medium"
                           onClick={() => {
                             setError(null);
-                            // Switch to sign in tab by targeting the trigger
                             document.querySelector<HTMLButtonElement>('[value="signin"]')?.click();
                           }}
                         >
@@ -243,10 +240,10 @@ export default function Login() {
                     )}
                   </div>
                 )}
-                {message && <p className="text-sm text-green-600">{message}</p>}
+                {message && <p className="text-sm text-[hsl(var(--reading-accent))]">{message}</p>}
                 <Button
                   type="submit"
-                  className="game-panel w-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game border-2 border-[#7a6a9a]"
+                  className="w-full reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white font-game border-0"
                   disabled={submitting || !email.trim() || !password || password.length < 6}
                 >
                   {submitting ? 'Creating account...' : 'Create account'}

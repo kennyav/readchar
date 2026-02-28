@@ -48,9 +48,9 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-[#F9F6F1]">
+      <DialogContent className="rounded-xl sm:max-w-md bg-[hsl(var(--reading-bg))] border-[hsl(var(--reading-border))]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#2C2C2E] text-center" style={{ fontFamily: 'serif' }}>
+          <DialogTitle className="text-2xl font-bold font-reading-heading text-[hsl(var(--reading-ink))] text-center">
             Reading Session
           </DialogTitle>
         </DialogHeader>
@@ -58,21 +58,10 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
         <div className="py-8">
           <div className="flex flex-col items-center space-y-8">
             {/* Timer display */}
-            <div
-              className="w-48 h-48 rounded-full flex items-center justify-center"
-              style={{
-                background: '#F9F6F1',
-                boxShadow: `
-                  -8px -8px 16px rgba(255, 255, 255, 0.8),
-                  8px 8px 16px rgba(0, 0, 0, 0.1),
-                  inset -2px -2px 8px rgba(255, 255, 255, 0.5),
-                  inset 2px 2px 8px rgba(0, 0, 0, 0.05)
-                `,
-              }}
-            >
+            <div className="w-48 h-48 rounded-full flex items-center justify-center reading-card bg-[hsl(var(--reading-surface))] border-[hsl(var(--reading-border))]">
               <div className="text-center">
-                <Timer className="w-8 h-8 mx-auto mb-4 text-[#9B7EBD]" />
-                <div className="text-4xl font-mono font-bold text-[#2C2C2E]">
+                <Timer className="w-8 h-8 mx-auto mb-4 text-[hsl(var(--reading-accent))]" />
+                <div className="text-4xl font-mono font-bold text-[hsl(var(--reading-ink))] tabular-nums">
                   {formatTime(seconds)}
                 </div>
               </div>
@@ -82,10 +71,7 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
             <div className="flex gap-4">
               <Button
                 onClick={() => setIsRunning(!isRunning)}
-                className="w-16 h-16 rounded-full bg-[#A8C5A0] hover:bg-[#98B590] text-white"
-                style={{
-                  boxShadow: '0 4px 12px rgba(168, 197, 160, 0.3)',
-                }}
+                className="w-16 h-16 rounded-full reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white border-0"
               >
                 {isRunning ? (
                   <Pause className="w-6 h-6" />
@@ -97,10 +83,7 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
               {seconds > 0 && (
                 <Button
                   onClick={handleComplete}
-                  className="px-6 h-16 rounded-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white"
-                  style={{
-                    boxShadow: '0 4px 12px rgba(155, 126, 189, 0.3)',
-                  }}
+                  className="px-6 h-16 rounded-full reading-card bg-[hsl(var(--reading-surface))] hover:bg-[hsl(var(--reading-surface-soft))] text-[hsl(var(--reading-ink))] border border-[hsl(var(--reading-border))] font-game"
                 >
                   <StopCircle className="w-5 h-5 mr-2" />
                   Complete Session
@@ -108,12 +91,12 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
               )}
             </div>
 
-            <p className="text-sm text-[#6C6C70] text-center">
+            <p className="text-sm text-[hsl(var(--reading-ink-muted))] text-center">
               {isRunning
                 ? 'Focus on your reading...'
                 : seconds > 0
-                ? 'Paused - Resume or complete'
-                : 'Start your focused reading session'}
+                  ? 'Paused - Resume or complete'
+                  : 'Start your focused reading session'}
             </p>
           </div>
         </div>

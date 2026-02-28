@@ -192,16 +192,21 @@ export function PetAvatar({ pet, size = 200 }: PetAvatarProps) {
   const { traits, stage } = pet;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative flex items-center justify-center"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${pet.name}, ${stage} pet`}
+    >
+      {/* Layer 1: background + shadow — fixed on y, shadow has its own subtle motion */}
       <svg
         viewBox="0 0 200 200"
         width={size}
         height={size}
-        role="img"
-        aria-label={`${pet.name}, ${stage} pet`}
+        className="absolute inset-0"
+        aria-hidden
       >
         <rect x={0} y={0} width={200} height={200} rx={16} fill="hsl(var(--reading-bg, #F9F6F1))" />
-        {/* Shadow: shrinks and lightens when pet bobs up */}
         <motion.ellipse
           cx={100}
           cy={185}
@@ -213,16 +218,23 @@ export function PetAvatar({ pet, size = 200 }: PetAvatarProps) {
           }}
           transition={BOB_TRANSITION}
         />
-        <motion.g
-          animate={{ y: [0, -10, 0] }}
-          transition={BOB_TRANSITION}
-        >
-          {renderBody(traits, stage)}
-          {renderMarkings(traits, stage)}
-          {renderEyes(traits, stage)}
-          {renderAccessory(traits, stage)}
-        </motion.g>
       </svg>
+      {/* Layer 2: pet only — bobs up and down */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ width: size, height: size }}
+        animate={{ y: [0, -12, 0] }}
+        transition={BOB_TRANSITION}
+      >
+        <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden>
+          <g>
+            {renderBody(traits, stage)}
+            {renderMarkings(traits, stage)}
+            {renderEyes(traits, stage)}
+            {renderAccessory(traits, stage)}
+          </g>
+        </svg>
+      </motion.div>
     </div>
   );
 }

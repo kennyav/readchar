@@ -213,7 +213,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F6F1] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[hsl(var(--reading-bg))] flex items-center justify-center p-6">
       <div className="w-full max-w-2xl">
         <AnimatePresence mode="wait">
           <motion.div
@@ -228,11 +228,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {step === 0 && (
               <div className="space-y-8">
                 <div className="text-center space-y-4">
-                  <BookOpen className="w-16 h-16 mx-auto text-[#9B7EBD]" />
-                  <h1 className="text-4xl font-bold text-[#2C2C2E]" style={{ fontFamily: 'serif' }}>
+                  <BookOpen className="w-16 h-16 mx-auto text-[hsl(var(--reading-accent))]" />
+                  <h1 className="text-4xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
                     Welcome to ReadSelf
                   </h1>
-                  <p className="text-lg text-[#6C6C70]">
+                  <p className="text-lg text-[hsl(var(--reading-ink-muted))]">
                     Select your favorite genres (up to 3)
                   </p>
                 </div>
@@ -241,15 +241,10 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     <button
                       key={genre}
                       onClick={() => toggleGenre(genre)}
-                      className={`p-4 rounded-2xl text-center font-medium transition-all ${selectedGenres.includes(genre)
-                          ? 'bg-[#9B7EBD] text-white shadow-lg scale-105'
-                          : 'bg-white text-[#2C2C2E] hover:shadow-md'
+                      className={`p-4 rounded-2xl text-center font-medium font-game transition-all ${selectedGenres.includes(genre)
+                          ? 'reading-card bg-[hsl(var(--reading-accent))] text-white shadow-sm scale-[1.02]'
+                          : 'reading-card bg-[hsl(var(--reading-surface))] text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))]'
                         }`}
-                      style={{
-                        boxShadow: selectedGenres.includes(genre)
-                          ? '0 8px 16px rgba(155, 126, 189, 0.3)'
-                          : '-4px -4px 8px rgba(255, 255, 255, 0.8), 4px 4px 8px rgba(0, 0, 0, 0.1)',
-                      }}
                     >
                       {genre}
                     </button>
@@ -262,11 +257,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {step === 1 && (
               <div className="space-y-8">
                 <div className="text-center space-y-4">
-                  <Target className="w-16 h-16 mx-auto text-[#A8C5A0]" />
-                  <h1 className="text-4xl font-bold text-[#2C2C2E]" style={{ fontFamily: 'serif' }}>
-                    What's your reading goal?
+                  <Target className="w-16 h-16 mx-auto text-[hsl(var(--reading-accent))]" />
+                  <h1 className="text-4xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
+                    What&apos;s your reading goal?
                   </h1>
-                  <p className="text-lg text-[#6C6C70]">
+                  <p className="text-lg text-[hsl(var(--reading-ink-muted))]">
                     Choose the pace that fits your lifestyle
                   </p>
                 </div>
@@ -275,18 +270,13 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     <button
                       key={goal.value}
                       onClick={() => setReadingGoal(goal.value)}
-                      className={`w-full p-6 rounded-2xl text-left transition-all ${readingGoal === goal.value
-                          ? 'bg-[#A8C5A0] text-white shadow-lg scale-105'
-                          : 'bg-white text-[#2C2C2E] hover:shadow-md'
+                      className={`w-full p-6 rounded-2xl text-left font-game transition-all ${readingGoal === goal.value
+                          ? 'reading-card bg-[hsl(var(--reading-accent))] text-white shadow-sm scale-[1.02]'
+                          : 'reading-card bg-[hsl(var(--reading-surface))] text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))]'
                         }`}
-                      style={{
-                        boxShadow: readingGoal === goal.value
-                          ? '0 8px 16px rgba(168, 197, 160, 0.3)'
-                          : '-4px -4px 8px rgba(255, 255, 255, 0.8), 4px 4px 8px rgba(0, 0, 0, 0.1)',
-                      }}
                     >
                       <div className="font-bold text-xl mb-1">{goal.label}</div>
-                      <div className={readingGoal === goal.value ? 'text-white/90' : 'text-[#6C6C70]'}>
+                      <div className={readingGoal === goal.value ? 'text-white/90' : 'text-[hsl(var(--reading-ink-muted))]'}>
                         {goal.description}
                       </div>
                     </button>
@@ -299,11 +289,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {step === 2 && (
               <div className="space-y-8">
                 <div className="text-center space-y-4">
-                  <Sparkles className="w-16 h-16 mx-auto text-[#E8B86D]" />
-                  <h1 className="text-4xl font-bold text-[#2C2C2E]" style={{ fontFamily: 'serif' }}>
+                  <Sparkles className="w-16 h-16 mx-auto text-[hsl(var(--reading-accent))]" />
+                  <h1 className="text-4xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
                     Choose your focus
                   </h1>
-                  <p className="text-lg text-[#6C6C70]">
+                  <p className="text-lg text-[hsl(var(--reading-ink-muted))]">
                     Select attributes you want to develop (up to 3)
                   </p>
                 </div>
@@ -312,15 +302,10 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     <button
                       key={attr.value}
                       onClick={() => toggleAttribute(attr.value)}
-                      className={`p-6 rounded-2xl text-center transition-all ${selectedAttributes.includes(attr.value)
-                          ? 'bg-[#E8B86D] text-white shadow-lg scale-105'
-                          : 'bg-white text-[#2C2C2E] hover:shadow-md'
+                      className={`p-6 rounded-2xl text-center font-game transition-all ${selectedAttributes.includes(attr.value)
+                          ? 'reading-card bg-[hsl(var(--reading-accent))] text-white shadow-sm scale-[1.02]'
+                          : 'reading-card bg-[hsl(var(--reading-surface))] text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))]'
                         }`}
-                      style={{
-                        boxShadow: selectedAttributes.includes(attr.value)
-                          ? '0 8px 16px rgba(232, 184, 109, 0.3)'
-                          : '-4px -4px 8px rgba(255, 255, 255, 0.8), 4px 4px 8px rgba(0, 0, 0, 0.1)',
-                      }}
                     >
                       <div className="text-4xl mb-2">{attr.icon}</div>
                       <div className="font-semibold">{attr.label}</div>
@@ -334,22 +319,18 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {step === 3 && (
               <div className="space-y-8">
                 <div className="text-center space-y-4">
-                  <UserPlus className="w-16 h-16 mx-auto text-[#9B7EBD]" />
-                  <h1 className="text-4xl font-bold text-[#2C2C2E]" style={{ fontFamily: 'serif' }}>
+                  <UserPlus className="w-16 h-16 mx-auto text-[hsl(var(--reading-accent))]" />
+                  <h1 className="text-4xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
                     Save your journey
                   </h1>
-                  <p className="text-lg text-[#6C6C70]">
+                  <p className="text-lg text-[hsl(var(--reading-ink-muted))]">
                     Create an account to keep your progress across devices
                   </p>
                 </div>
 
-                <form onSubmit={handleSignUp} className="space-y-4 bg-white rounded-2xl p-8"
-                  style={{
-                    boxShadow: '-4px -4px 8px rgba(255, 255, 255, 0.8), 4px 4px 8px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
+                <form onSubmit={handleSignUp} className="space-y-4 reading-card rounded-2xl p-8">
                   <div className="space-y-2">
-                    <Label htmlFor="onboarding-email" className="text-[#2C2C2E] font-medium">
+                    <Label htmlFor="onboarding-email" className="font-medium text-[hsl(var(--reading-ink))]">
                       Email
                     </Label>
                     <Input
@@ -360,12 +341,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       autoComplete="email"
-                      className="font-game"
+                      className="font-game border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="onboarding-password" className="text-[#2C2C2E] font-medium">
+                    <Label htmlFor="onboarding-password" className="font-medium text-[hsl(var(--reading-ink))]">
                       Password
                     </Label>
                     <div className="relative">
@@ -378,12 +359,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         required
                         minLength={6}
                         autoComplete="new-password"
-                        className="font-game pr-10"
+                        className="font-game pr-10 border-[hsl(var(--reading-border))] bg-[hsl(var(--reading-surface))]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6C6C70] hover:text-[#2C2C2E] p-1"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] p-1"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -395,9 +376,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     <div className="space-y-1">
                       <p className="text-sm text-red-600">{error}</p>
                       {(error.includes('already exists') || error.includes('confirm it')) && (
-                        <p className="text-sm text-[#6C6C70]">
+                        <p className="text-sm text-[hsl(var(--reading-ink-muted))]">
                           Already have an account?{' '}
-                          <a href="/login" className="text-[#9B7EBD] underline font-medium">
+                          <a href="/login" className="text-[hsl(var(--reading-accent))] underline font-medium">
                             Sign in instead
                           </a>
                         </p>
@@ -407,24 +388,25 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game font-semibold border-2 border-[#7a6a9a] rounded-xl py-6"
+                    className="w-full reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white font-game font-semibold border-0 rounded-xl py-6"
                     disabled={submitting || !email.trim() || password.length < 6}
                   >
                     {submitting ? 'Creating your account...' : 'Begin Journey 🚀'}
                   </Button>
                   <Button
+                    type="button"
                     onClick={handleSignInWithGoogle}
-                    className="w-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game font-semibold border-2 border-[#7a6a9a] rounded-xl py-6"
+                    className="w-full reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white font-game font-semibold border-0 rounded-xl py-6"
                   >
                     Sign in with Google
                   </Button>
                 </form>
-                  <div className="text-center text-lg text-[#6C6C70]">Or</div>
-                <div className="flex flex-col bg-white rounded-2xl p-8 gap-4 justify-center items-center w-full mt-4">
-                  
+                <div className="text-center text-lg text-[hsl(var(--reading-ink-muted))]">Or</div>
+                <div className="flex flex-col reading-card rounded-2xl p-8 gap-4 justify-center items-center w-full mt-4">
                   <Button
+                    type="button"
                     onClick={handleSignIn}
-                    className="w-full bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white font-game font-semibold border-2 border-[#7a6a9a] rounded-xl py-6"
+                    className="w-full reading-card bg-[hsl(var(--reading-surface))] hover:bg-[hsl(var(--reading-surface-soft))] text-[hsl(var(--reading-ink))] font-game font-semibold border border-[hsl(var(--reading-border))] rounded-xl py-6"
                   >
                     Sign in with Email
                   </Button>
@@ -443,8 +425,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div
                 key={i}
-                className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-[#9B7EBD]' : i < step ? 'bg-[#9B7EBD]/40' : 'bg-[#6C6C70]/30'
-                  }`}
+                className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-[hsl(var(--reading-accent))]' : i < step ? 'bg-[hsl(var(--reading-accent))]/40' : 'bg-[hsl(var(--reading-ink-muted))]/30'}`}
               />
             ))}
           </div>
@@ -455,7 +436,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <Button
                 onClick={handleBack}
                 variant="outline"
-                className="px-6 py-6 rounded-full font-game"
+                className="px-6 py-6 rounded-full font-game border-[hsl(var(--reading-border))] text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))]"
               >
                 Back
               </Button>
@@ -466,8 +447,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className="px-8 py-6 bg-[#9B7EBD] hover:bg-[#8B6EAD] text-white rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed font-game"
-                style={{ boxShadow: '0 4px 12px rgba(155, 126, 189, 0.3)' }}
+                className="px-8 py-6 reading-card bg-[hsl(var(--reading-accent))] hover:bg-[hsl(var(--reading-accent))]/90 text-white rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed font-game"
               >
                 Continue
               </Button>
