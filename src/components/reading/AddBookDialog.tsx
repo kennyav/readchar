@@ -98,7 +98,7 @@ export function AddBookDialog({ open, onClose, onAdd }: AddBookDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden bg-[hsl(var(--reading-bg))] border-[hsl(var(--reading-border))] rounded-xl sm:max-w-lg">
+      <DialogContent className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden bg-[hsl(var(--reading-bg))] border-[hsl(var(--reading-border))] rounded-xl sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold font-reading-heading text-[hsl(var(--reading-ink))]">
             Add a Book

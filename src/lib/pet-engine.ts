@@ -56,24 +56,34 @@ export function computePetTraits(seed: string, books: Book[], character: Charact
   const primaryColor = books.length > 0 ? genreColor : PET_PRIMARY_COLORS[primaryIndex];
   const secondaryColor = PET_SECONDARY_COLORS[secondaryIndex];
 
-  const bodyType = Math.floor(seedValue(seed, 'pet_body') * 3);
-  const markingStyle = Math.floor(seedValue(seed, 'pet_markings') * 3);
-  const eyeStyle = Math.floor(seedValue(seed, 'pet_eyes') * 3);
+  // Evolution line: 0 = Charmander, 1 = Squirtle, 2 = Bulbasaur. Clamp so 0/1/2 are all possible.
+  const bodyType = Math.min(2, Math.floor(seedValue(seed, 'pet_body') * 3));
+  const mouthStyle = Math.min(2, Math.floor(seedValue(seed, 'pet_mouth') * 3));
+
+  // Which accessories fit each evolution line (so they don't clash with the design)
+  const ALLOWED_ACCESSORIES: Record<number, string[]> = {
+    0: ['hat'],                // Charmander: hat
+    1: [],                     // Squirtle: no accessory (shell is the focus)
+    2: ['hat', 'glasses'],     // Bulbasaur: hat or glasses
+  };
 
   let accessory: string | null = null;
   if (dominantGenre && books.length >= 2) {
     const slot = GENRE_VISUALS[dominantGenre].slot;
-    if (slot === 'hat') accessory = 'hat';
-    else if (slot === 'cloak') accessory = 'scarf';
-    else if (dominantGenre === 'Philosophy') accessory = 'glasses';
+    let candidate: string | null = null;
+    if (slot === 'hat') candidate = 'hat';
+    else if (dominantGenre === 'Philosophy') candidate = 'glasses';
+    const allowed = ALLOWED_ACCESSORIES[bodyType] ?? [];
+    if (candidate && allowed.includes(candidate)) accessory = candidate;
   }
 
   return {
     bodyType,
     primaryColor,
     secondaryColor,
-    markingStyle,
-    eyeStyle,
+    markingStyle: 0,
+    eyeStyle: 1,
+    mouthStyle,
     accessory,
   };
 }
@@ -83,6 +93,9 @@ export function computePetTraits(seed: string, books: Book[], character: Charact
 export function createInitialPet(seed: string, character: CharacterState, books: Book[], id?: string): Pet {
   const stage = getPetStage(character);
   const traits = computePetTraits(seed, books, character);
+  // Randomize primary color at creation so each pet gets a random look from the palette
+  traits.primaryColor =
+    PET_PRIMARY_COLORS[Math.floor(Math.random() * PET_PRIMARY_COLORS.length)];
   const now = new Date();
   const defaultName = getDefaultPetName(seed);
   return {
@@ -112,6 +125,8 @@ export function evolvePetIfNeeded(
 ): { pet: Pet; didEvolve: boolean } {
   const newStage = getPetStage(character);
   const newTraits = computePetTraits(pet.seed, books, character);
+  // Keep the pet's random primary color across evolution
+  newTraits.primaryColor = pet.traits.primaryColor;
   const stageChanged = newStage !== pet.stage;
   const traitsChanged =
     JSON.stringify(newTraits) !== JSON.stringify(pet.traits);

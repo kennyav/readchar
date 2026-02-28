@@ -70,17 +70,17 @@ export interface CharacterJournalEntry {
   evolutionLevel?: number;
 }
 
-export interface CharacterState {
-  attributes: Record<AttributeType, Attribute>;
-  totalBooksRead: number;
-  totalReadingTime: number; // in seconds
-  currentLevel: number;
-  visualTraits: {
-    baseColor: string;
-    accessories: string[];
-    aura: string;
-  };
-}
+// export interface CharacterState {
+//   attributes: Record<AttributeType, Attribute>;
+//   totalBooksRead: number;
+//   totalReadingTime: number; // in seconds
+//   currentLevel: number;
+//   visualTraits: {
+//     baseColor: string;
+//     accessories: string[];
+//     aura: string;
+//   };
+// }
 
 export interface OnboardingAnswers {
   favoriteGenres: Genre[];
@@ -93,7 +93,7 @@ export interface OnboardingAnswers {
 export type PetStage = 'egg' | 'hatchling' | 'adult';
 
 export interface PetTraits {
-  /** Body type: 0=blob, 1=quadruped, 2=winged */
+  /** Evolution line (0–2): 0=Charmander (fire/dragon), 1=Squirtle (turtle), 2=Bulbasaur (plant). Hatchling and adult are distinct species. */
   bodyType: number;
   /** Primary color (hex) */
   primaryColor: string;
@@ -103,7 +103,9 @@ export interface PetTraits {
   markingStyle: number;
   /** Eye style: 0=dot, 1=wide, 2=closed happy */
   eyeStyle: number;
-  /** Accessory from dominant genre (e.g. tiny hat, scarf) — optional key */
+  /** Mouth style: 0=closed smile, 1=open mouth, 2=smile with tooth */
+  mouthStyle: number;
+  /** Accessory from dominant genre (e.g. hat, glasses) — optional key */
   accessory: string | null;
 }
 

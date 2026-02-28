@@ -9,229 +9,330 @@ const BOB_TRANSITION = {
   ease: 'easeInOut' as const,
 };
 
+export type PetAnimation = 'idle' | 'run';
+
 interface PetAvatarProps {
   pet: Pet;
   size?: number;
+  /** When 'run', pet runs across the area with a bouncy stride (still procedural, no art). */
+  animation?: PetAnimation;
 }
 
-const STAGE_SCALE: Record<PetStage, number> = {
-  egg: 0.6,
-  hatchling: 0.85,
-  adult: 1,
-};
+// Pokémon-style: thick black outline, flat colors, readable silhouettes
+const OUTLINE = '#1a1a1a';
+const OUTLINE_WIDTH = 2.5;
 
-function renderBody(traits: PetTraits, stage: PetStage) {
-  const scale = STAGE_SCALE[stage];
-  const cx = 100;
-  const cy = 100;
-  const stroke = '#2C2C2E';
+/** Evolution line: 0 = Charmander (fire/dragon), 1 = Squirtle (turtle), 2 = Bulbasaur (plant). */
+type EvolutionLine = 0 | 1 | 2;
 
-  switch (traits.bodyType) {
-    case 1: {
-      // Quadruped: rounded body + four legs
-      const w = 70 * scale;
-      const h = 50 * scale;
-      return (
-        <g>
-          <ellipse cx={cx} cy={cy} rx={w / 2} ry={h / 2} fill={traits.primaryColor} stroke={stroke} strokeWidth={2} />
-          <ellipse cx={cx - 28 * scale} cy={cy + 35 * scale} rx={10 * scale} ry={18 * scale} fill={traits.primaryColor} stroke={stroke} strokeWidth={1.5} />
-          <ellipse cx={cx + 28 * scale} cy={cy + 35 * scale} rx={10 * scale} ry={18 * scale} fill={traits.primaryColor} stroke={stroke} strokeWidth={1.5} />
-          <ellipse cx={cx - 32 * scale} cy={cy + 8 * scale} rx={8 * scale} ry={14 * scale} fill={traits.primaryColor} stroke={stroke} strokeWidth={1.5} />
-          <ellipse cx={cx + 32 * scale} cy={cy + 8 * scale} rx={8 * scale} ry={14 * scale} fill={traits.primaryColor} stroke={stroke} strokeWidth={1.5} />
-        </g>
-      );
-    }
-    case 2: {
-      // Winged: blob body + two wings
-      const r = 45 * scale;
-      return (
-        <g>
-          <circle cx={cx} cy={cy} r={r} fill={traits.primaryColor} stroke={stroke} strokeWidth={2} />
-          <path
-            d={`M ${cx - r * 0.6} ${cy - r * 0.3} Q ${cx - r * 1.6} ${cy - r * 0.8} ${cx - r * 1.2} ${cy} Q ${cx - r * 1.4} ${cy + r * 0.4} ${cx - r * 0.6} ${cy + r * 0.2} Z`}
-            fill={traits.secondaryColor}
-            stroke={stroke}
-            strokeWidth={1.5}
-            opacity={0.9}
-          />
-          <path
-            d={`M ${cx + r * 0.6} ${cy - r * 0.3} Q ${cx + r * 1.6} ${cy - r * 0.8} ${cx + r * 1.2} ${cy} Q ${cx + r * 1.4} ${cy + r * 0.4} ${cx + r * 0.6} ${cy + r * 0.2} Z`}
-            fill={traits.secondaryColor}
-            stroke={stroke}
-            strokeWidth={1.5}
-            opacity={0.9}
-          />
-        </g>
-      );
-    }
-    default: {
-      // Blob: soft ellipse
-      const rx = 50 * scale;
-      const ry = 45 * scale;
-      return (
-        <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={traits.primaryColor} stroke={stroke} strokeWidth={2} />
-      );
-    }
-  }
-}
+const cx = 100;
+const cy = 100;
 
-function renderMarkings(traits: PetTraits, stage: PetStage) {
-  if (traits.markingStyle === 0) return null;
-  const scale = STAGE_SCALE[stage];
-  const cx = 100;
-  const cy = 100;
-  const stroke = '#2C2C2E';
-  const fill = traits.secondaryColor;
-
-  if (traits.markingStyle === 1) {
-    return (
-      <g opacity={0.8}>
-        <circle cx={cx - 15 * scale} cy={cy - 10 * scale} r={8 * scale} fill={fill} stroke={stroke} strokeWidth={1} />
-        <circle cx={cx + 18 * scale} cy={cy - 5 * scale} r={6 * scale} fill={fill} stroke={stroke} strokeWidth={1} />
-        <circle cx={cx} cy={cy + 15 * scale} r={7 * scale} fill={fill} stroke={stroke} strokeWidth={1} />
-      </g>
-    );
-  }
-  // Stripes
+// ─── Egg (same for all lines; color hints at future evolution) ───
+function renderEgg(traits: PetTraits) {
+  const rx = 36;
+  const ry = 50;
   return (
-    <g opacity={0.7} stroke={fill} strokeWidth={4 * scale} strokeLinecap="round">
-      <line x1={cx - 35 * scale} y1={cy - 15 * scale} x2={cx - 25 * scale} y2={cy + 20 * scale} />
-      <line x1={cx} y1={cy - 25 * scale} x2={cx} y2={cy + 25 * scale} />
-      <line x1={cx + 35 * scale} y1={cy - 10 * scale} x2={cx + 25 * scale} y2={cy + 22 * scale} />
+    <g>
+      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 10} cy={cy - 16} rx={10} ry={14} fill={traits.secondaryColor} opacity={0.5} />
     </g>
   );
 }
 
-function renderEyes(traits: PetTraits, stage: PetStage) {
-  const scale = STAGE_SCALE[stage];
-  const cx = 100;
-  const cy = 100;
-  const leftX = cx - 14 * scale;
-  const rightX = cx + 14 * scale;
-  const eyeY = cy - 8 * scale;
-  const stroke = '#2C2C2E';
-
-  switch (traits.eyeStyle) {
-    case 1:
-      return (
-        <g>
-          <ellipse cx={leftX} cy={eyeY} rx={8 * scale} ry={10 * scale} fill="#fff" stroke={stroke} strokeWidth={1.5} />
-          <ellipse cx={rightX} cy={eyeY} rx={8 * scale} ry={10 * scale} fill="#fff" stroke={stroke} strokeWidth={1.5} />
-          <circle cx={leftX} cy={eyeY + 2} r={5 * scale} fill={stroke} />
-          <circle cx={rightX} cy={eyeY + 2} r={5 * scale} fill={stroke} />
-          <circle cx={leftX + 2} cy={eyeY - 1} r={2 * scale} fill="#fff" />
-          <circle cx={rightX + 2} cy={eyeY - 1} r={2 * scale} fill="#fff" />
-        </g>
-      );
-    case 2:
-      return (
-        <g stroke={stroke} strokeWidth={2} strokeLinecap="round">
-          <path d={`M ${leftX - 6} ${eyeY} Q ${leftX} ${eyeY - 6} ${leftX + 6} ${eyeY}`} fill="none" />
-          <path d={`M ${rightX - 6} ${eyeY} Q ${rightX} ${eyeY - 6} ${rightX + 6} ${eyeY}`} fill="none" />
-        </g>
-      );
-    default:
-      return (
-        <g>
-          <circle cx={leftX} cy={eyeY} r={5 * scale} fill={stroke} />
-          <circle cx={rightX} cy={eyeY} r={5 * scale} fill={stroke} />
-          <circle cx={leftX + 1.5} cy={eyeY - 1.5} r={1.5 * scale} fill="#fff" />
-          <circle cx={rightX + 1.5} cy={eyeY - 1.5} r={1.5 * scale} fill="#fff" />
-        </g>
-      );
-  }
+// ─── Line 0: Charmander (fire lizard → dragon) ───
+// Hatchling: small bipedal lizard with tail and flame nub
+function renderCharmanderHatchling(traits: PetTraits) {
+  const s = 0.9;
+  return (
+    <g>
+      <ellipse cx={cx} cy={cy - 4 * s} rx={28 * s} ry={26 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 20 * s} cy={cy + 28 * s} rx={10 * s} ry={14 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 20 * s} cy={cy + 28 * s} rx={10 * s} ry={14 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <path d={`M ${cx + 32 * s} ${cy + 8 * s} Q ${cx + 50 * s} ${cy + 2} ${cx + 48 * s} ${cy + 20 * s}`} fill="none" stroke={traits.primaryColor} strokeWidth={OUTLINE_WIDTH} strokeLinecap="round" />
+      <circle cx={cx + 50 * s} cy={cy + 18 * s} r={8 * s} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
 }
 
-function renderAccessory(traits: PetTraits, stage: PetStage) {
-  if (!traits.accessory) return null;
-  const scale = STAGE_SCALE[stage];
-  const cx = 100;
-  const cy = 100;
-  const stroke = '#2C2C2E';
+// Adult: dragon with body, little feet, wings and flame tail (tail at back, head in front)
+function renderCharmanderAdult(traits: PetTraits) {
+  const r = 38;
+  return (
+    <g>
+      <path d={`M ${cx - r * 0.5} ${cy + 36} Q ${cx - 52} ${cy + 48} ${cx - 48} ${cy + 58}`} fill="none" stroke={traits.primaryColor} strokeWidth={OUTLINE_WIDTH} strokeLinecap="round" />
+      <circle cx={cx - 48} cy={cy + 55} r={12} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy + 32} rx={r * 0.5} ry={r * 0.7} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <path d={`M ${cx - r * 0.65} ${cy - r * 0.3} Q ${cx - r * 1.5} ${cy - r * 0.8} ${cx - r * 1.1} ${cy} Q ${cx - r * 1.35} ${cy + r * 0.45} ${cx - r * 0.6} ${cy + r * 0.15} Z`} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} opacity={0.95} />
+      <path d={`M ${cx + r * 0.65} ${cy - r * 0.3} Q ${cx + r * 1.5} ${cy - r * 0.8} ${cx + r * 1.1} ${cy} Q ${cx + r * 1.35} ${cy + r * 0.45} ${cx + r * 0.6} ${cy + r * 0.15} Z`} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} opacity={0.95} />
+      <ellipse cx={cx - 18} cy={cy + 58} rx={10} ry={8} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 18} cy={cy + 58} rx={10} ry={8} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 11} cy={cy + 28} rx={9} ry={7} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 11} cy={cy + 28} rx={9} ry={7} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy - 8} rx={r * 0.85} ry={r * 0.7} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
+}
 
-  if (traits.accessory === 'hat') {
+// ─── Line 1: Squirtle (turtle) ───
+// Hatchling: small round turtle with shell
+function renderSquirtleHatchling(traits: PetTraits) {
+  const s = 0.88;
+  return (
+    <g>
+      <ellipse cx={cx} cy={cy + 6 * s} rx={32 * s} ry={28 * s} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy + 4 * s} rx={26 * s} ry={22 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 22 * s} cy={cy + 32 * s} rx={8 * s} ry={10 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 22 * s} cy={cy + 32 * s} rx={8 * s} ry={10 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 26 * s} cy={cy + 12 * s} rx={6 * s} ry={9 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 26 * s} cy={cy + 12 * s} rx={6 * s} ry={9 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
+}
+
+// Adult: larger turtle with prominent shell
+function renderSquirtleAdult(traits: PetTraits) {
+  return (
+    <g>
+      <ellipse cx={cx} cy={cy + 12} rx={42} ry={32} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy + 8} rx={34} ry={26} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 28} cy={cy + 40} rx={12} ry={16} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 28} cy={cy + 40} rx={12} ry={16} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 34} cy={cy + 18} rx={10} ry={14} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 34} cy={cy + 18} rx={10} ry={14} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
+}
+
+// ─── Line 2: Bulbasaur (plant quadruped) ───
+// Hatchling: small quadruped with bulb on back
+function renderBulbasaurHatchling(traits: PetTraits) {
+  const s = 0.88;
+  return (
+    <g>
+      <circle cx={cx} cy={cy - 18 * s} r={18 * s} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy + 8 * s} rx={28 * s} ry={22 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 22 * s} cy={cy + 36 * s} rx={8 * s} ry={12 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 22 * s} cy={cy + 36 * s} rx={8 * s} ry={12 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 26 * s} cy={cy + 14 * s} rx={6 * s} ry={10 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 26 * s} cy={cy + 14 * s} rx={6 * s} ry={10 * s} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
+}
+
+// Adult: quadruped with flower on back
+function renderBulbasaurAdult(traits: PetTraits) {
+  return (
+    <g>
+      <path d={`M ${cx} ${cy - 45} Q ${cx - 18} ${cy - 55} ${cx - 12} ${cy - 38} Q ${cx} ${cy - 42} ${cx + 12} ${cy - 38} Q ${cx + 18} ${cy - 55} ${cx} ${cy - 45} Z`} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <circle cx={cx} cy={cy - 42} r={14} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx} cy={cy + 10} rx={36} ry={28} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 30} cy={cy + 42} rx={11} ry={16} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 30} cy={cy + 42} rx={11} ry={16} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx - 35} cy={cy + 18} rx={9} ry={14} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={cx + 35} cy={cy + 18} rx={9} ry={14} fill={traits.primaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+    </g>
+  );
+}
+
+// ─── Eyes: wide style only (big white + pupil + highlight) ───
+function renderEyes(traits: PetTraits, stage: PetStage) {
+  const scale = stage === 'hatchling' ? 1.15 : 1;
+  const leftX = cx - 14 * scale;
+  const rightX = cx + 14 * scale;
+  const eyeY = cy - (stage === 'hatchling' ? 6 : 10) * scale;
+
+  return (
+    <g>
+      <ellipse cx={leftX} cy={eyeY} rx={9 * scale} ry={11 * scale} fill="#fff" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <ellipse cx={rightX} cy={eyeY} rx={9 * scale} ry={11 * scale} fill="#fff" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <circle cx={leftX} cy={eyeY + 2} r={5 * scale} fill={OUTLINE} />
+      <circle cx={rightX} cy={eyeY + 2} r={5 * scale} fill={OUTLINE} />
+      <circle cx={leftX + 2} cy={eyeY - 1} r={2 * scale} fill="#fff" />
+      <circle cx={rightX + 2} cy={eyeY - 1} r={2 * scale} fill="#fff" />
+    </g>
+  );
+}
+
+// ─── Mouth: 0 = closed smile (less curved), 1 = open, 2 = smile with tooth ───
+function renderMouth(traits: PetTraits, stage: PetStage) {
+  const scale = stage === 'hatchling' ? 1.15 : 1;
+  const mouthY = cy + (stage === 'hatchling' ? 8 : 12) * scale;
+  const w = 12 * scale;
+  const style = traits.mouthStyle ?? 0;
+
+  if (style === 1) {
+    // Open mouth: filled smile shape (U with curved bottom)
+    const w2 = 10 * scale;
+    const depth = 6 * scale;
     return (
-      <g transform={`translate(${cx}, ${cy - 42 * scale})`}>
+      <path
+        d={`M ${cx - w2} ${mouthY} Q ${cx} ${mouthY + depth} ${cx + w2} ${mouthY} Z`}
+        fill={OUTLINE}
+        stroke={OUTLINE}
+        strokeWidth={OUTLINE_WIDTH}
+        strokeLinejoin="round"
+      />
+    );
+  }
+
+  if (style === 2) {
+    // Smile with tooth sticking out (one side)
+    const curve = 2.5 * scale;
+    return (
+      <g>
         <path
-          d={`M -18 0 L 0 -28 L 18 0 Z`}
-          fill={traits.secondaryColor}
-          stroke={stroke}
-          strokeWidth={1.5}
+          d={`M ${cx - w} ${mouthY} Q ${cx} ${mouthY + curve} ${cx + w} ${mouthY}`}
+          fill="none"
+          stroke={OUTLINE}
+          strokeWidth={OUTLINE_WIDTH}
+          strokeLinecap="round"
         />
-        <ellipse cx={0} cy={4} rx={22} ry={6} fill={traits.secondaryColor} stroke={stroke} strokeWidth={1.5} />
+        <path
+          d={`M ${cx + w - 2} ${mouthY} L ${cx + w + 6 * scale} ${mouthY - 4 * scale} L ${cx + w + 6 * scale} ${mouthY + 4 * scale} Z`}
+          fill="#fff"
+          stroke={OUTLINE}
+          strokeWidth={OUTLINE_WIDTH}
+        />
       </g>
     );
   }
-  if (traits.accessory === 'scarf') {
+
+  // 0: Closed smile (less curved)
+  const curve = 2.5 * scale;
+  return (
+    <path
+      d={`M ${cx - w} ${mouthY} Q ${cx} ${mouthY + curve} ${cx + w} ${mouthY}`}
+      fill="none"
+      stroke={OUTLINE}
+      strokeWidth={OUTLINE_WIDTH}
+      strokeLinecap="round"
+    />
+  );
+}
+
+// Accessory only on adult
+function renderAccessory(traits: PetTraits) {
+  if (!traits.accessory) return null;
+
+  if (traits.accessory === 'hat') {
     return (
-      <g transform={`translate(${cx}, ${cy + 15 * scale})`}>
-        <path
-          d={`M -35 0 Q 0 25 35 0 Q 30 35 -30 35 Z`}
-          fill={traits.secondaryColor}
-          stroke={stroke}
-          strokeWidth={1.2}
-          opacity={0.95}
-        />
+      <g transform={`translate(${cx}, ${cy - 48})`}>
+        <path d="M -20 0 L 0 -32 L 20 0 Z" fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+        <ellipse cx={0} cy={6} rx={24} ry={7} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
       </g>
     );
   }
   if (traits.accessory === 'glasses') {
-    const r = 10 * scale;
     return (
-      <g transform={`translate(${cx}, ${cy - 8 * scale})`}>
-        <ellipse cx={-14} cy={0} rx={r} ry={r * 1.1} fill="none" stroke={stroke} strokeWidth={2} />
-        <ellipse cx={14} cy={0} rx={r} ry={r * 1.1} fill="none" stroke={stroke} strokeWidth={2} />
-        <line x1={-14 + r} y1={0} x2={14 - r} y2={0} stroke={stroke} strokeWidth={1.5} />
+      <g transform={`translate(${cx}, ${cy - 10})`}>
+        <ellipse cx={-16} cy={0} rx={12} ry={13} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+        <ellipse cx={16} cy={0} rx={12} ry={13} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+        <line x1={-4} y1={0} x2={4} y2={0} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
       </g>
     );
   }
   return null;
 }
 
-export function PetAvatar({ pet, size = 200 }: PetAvatarProps) {
+// Dispatch body by evolution line + stage (Charmander / Squirtle / Bulbasaur)
+function renderSpecies(traits: PetTraits, stage: PetStage) {
+  const line = Math.min(2, Math.max(0, traits.bodyType)) as EvolutionLine;
+  if (stage === 'egg') return renderEgg(traits);
+  if (stage === 'hatchling') {
+    if (line === 0) return renderCharmanderHatchling(traits);
+    if (line === 1) return renderSquirtleHatchling(traits);
+    return renderBulbasaurHatchling(traits);
+  }
+  if (line === 0) return renderCharmanderAdult(traits);
+  if (line === 1) return renderSquirtleAdult(traits);
+  return renderBulbasaurAdult(traits);
+}
+
+const RUN_X_DURATION = 2.8;
+const RUN_BOUNCE_DURATION = 0.25;
+
+export function PetAvatar({ pet, size = 200, animation = 'idle' }: PetAvatarProps) {
   const { traits, stage } = pet;
+  const isRunning = animation === 'run';
 
   return (
     <div
-      className="relative flex items-center justify-center"
+      className="relative flex items-center justify-center overflow-hidden"
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`${pet.name}, ${stage} pet`}
+      aria-label={isRunning ? `${pet.name} running` : `${pet.name}, ${stage} pet`}
     >
       {/* Layer 1: background + shadow — fixed on y, shadow has its own subtle motion */}
       <svg
         viewBox="0 0 200 200"
         width={size}
         height={size}
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         aria-hidden
       >
         <rect x={0} y={0} width={200} height={200} rx={16} fill="hsl(var(--reading-bg, #F9F6F1))" />
-        <motion.ellipse
-          cx={100}
-          cy={185}
-          fill="#2C2C2E"
-          animate={{
-            rx: [60, 48, 60],
-            ry: [8, 5, 8],
-            opacity: [0.08, 0.04, 0.08],
-          }}
-          transition={BOB_TRANSITION}
-        />
+        {!isRunning && (
+          <motion.ellipse
+            cx={100}
+            cy={185}
+            fill="#2C2C2E"
+            animate={{
+              rx: [60, 48, 60],
+              ry: [8, 5, 8],
+              opacity: [0.08, 0.04, 0.08],
+            }}
+            transition={BOB_TRANSITION}
+          />
+        )}
       </svg>
-      {/* Layer 2: pet only — bobs up and down */}
+      {/* Layer 2: pet — idle bobs; run moves across with bounce */}
       <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{ width: size, height: size }}
-        animate={{ y: [0, -12, 0] }}
-        transition={BOB_TRANSITION}
+        className="absolute flex items-center justify-center pointer-events-none"
+        style={{ width: size, height: size, left: isRunning ? undefined : 0, top: 0 }}
+        animate={
+          isRunning
+            ? {
+                x: [-size, size],
+                y: [0, -10, 0, -10, 0],
+              }
+            : { x: 0, y: [0, -12, 0] }
+        }
+        transition={
+          isRunning
+            ? {
+                x: { duration: RUN_X_DURATION, repeat: Infinity, ease: 'linear' },
+                y: { duration: RUN_BOUNCE_DURATION, repeat: Infinity, ease: 'easeInOut' },
+              }
+            : {
+                x: { duration: 0.25, ease: 'easeOut' },
+                y: { duration: BOB_TRANSITION.duration, repeat: Infinity, ease: BOB_TRANSITION.ease },
+              }
+        }
       >
-        <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden>
+        <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden className="flex-shrink-0">
           <g>
-            {renderBody(traits, stage)}
-            {renderMarkings(traits, stage)}
-            {renderEyes(traits, stage)}
-            {renderAccessory(traits, stage)}
+            {isRunning && (
+              <motion.ellipse
+                cx={100}
+                cy={185}
+                fill="#2C2C2E"
+                animate={{
+                  rx: [60, 48, 60],
+                  ry: [8, 5, 8],
+                  opacity: [0.08, 0.04, 0.08],
+                }}
+                transition={BOB_TRANSITION}
+              />
+            )}
+            {renderSpecies(traits, stage)}
+            {stage !== 'egg' && (
+              <>
+                {renderEyes(traits, stage)}
+                {renderMouth(traits, stage)}
+                {stage === 'adult' && renderAccessory(traits)}
+              </>
+            )}
           </g>
         </svg>
       </motion.div>

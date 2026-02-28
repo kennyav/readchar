@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PetAvatar } from '@/components/pet/PetAvatar';
+import { PetAvatar, type PetAnimation } from '@/components/pet/PetAvatar';
 import { GenreLegend } from '@/components/character/GenreLegend';
-import { TrendingUp, Pencil } from 'lucide-react';
+import { TrendingUp, Pencil, Play, Square } from 'lucide-react';
 import { Genre } from '@/types/reading';
 import type { Book, Pet } from '@/types/reading';
 
@@ -27,6 +27,7 @@ export default function CompanionTab({
 }: CompanionTabProps) {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(pet?.name ?? '');
+  const [petAnimation, setPetAnimation] = useState<PetAnimation>('idle');
 
   const handleSaveName = () => {
     const trimmed = draftName.trim();
@@ -48,7 +49,26 @@ export default function CompanionTab({
         <div className="inline-flex flex-col items-center">
           <div className="rounded-2xl p-6 reading-card inline-block">
             {pet ? (
-              <PetAvatar pet={pet} size={240} />
+              <>
+                <PetAvatar pet={pet} size={240} animation={petAnimation} />
+                {pet.stage !== 'egg' && (
+                  <button
+                    type="button"
+                    onClick={() => setPetAnimation((a) => (a === 'run' ? 'idle' : 'run'))}
+                    className="mt-3 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))] transition-colors"
+                  >
+                    {petAnimation === 'run' ? (
+                      <>
+                        <Square className="h-3.5 w-3.5" /> Stop
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-3.5 w-3.5" /> Watch them run
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             ) : (
               <div
                 className="flex items-center justify-center rounded-2xl bg-[hsl(var(--reading-surface-soft))] border border-dashed border-[hsl(var(--reading-border))] text-[hsl(var(--reading-ink-muted))]"
