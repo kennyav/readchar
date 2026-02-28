@@ -10,7 +10,7 @@ const BOB_TRANSITION = {
 };
 
 interface PetAvatarProps {
-  pet: Pet;
+  pet: Pet;f
   size?: number;
 }
 

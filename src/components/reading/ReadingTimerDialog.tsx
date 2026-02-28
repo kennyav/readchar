@@ -6,7 +6,7 @@ import { Timer, Play, Pause, StopCircle } from 'lucide-react';
 interface ReadingTimerDialogProps {
   open: boolean;
   onClose: () => void;
-  onComplete: (minutes: number) => void;
+  onComplete: (seconds: number) => void;
 }
 
 export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDialogProps) {
@@ -24,13 +24,10 @@ export function ReadingTimerDialog({ open, onClose, onComplete }: ReadingTimerDi
   }, [isRunning]);
 
   const handleComplete = () => {
-    const minutes = Math.floor(seconds / 60);
-    if (minutes > 0) {
-      onComplete(minutes);
-      setSeconds(0);
-      setIsRunning(false);
-      onClose();
-    }
+    onComplete(seconds);
+    setSeconds(0);
+    setIsRunning(false);
+    onClose();
   };
 
   const handleClose = () => {

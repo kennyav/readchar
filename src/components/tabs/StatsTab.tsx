@@ -7,10 +7,11 @@ interface StatsTabProps {
    data: AppData
    totalReadingHours: number
    totalReadingMinutes: number
+   totalReadingSeconds: number
    isActive: boolean
 }
 
-export default function StatsTab({ data, totalReadingHours, totalReadingMinutes, isActive }: StatsTabProps) {
+export default function StatsTab({ data, totalReadingHours, totalReadingMinutes, totalReadingSeconds, isActive }: StatsTabProps) {
    return (
       <motion.div
          key={isActive ? 'active' : 'inactive'}
@@ -33,7 +34,7 @@ export default function StatsTab({ data, totalReadingHours, totalReadingMinutes,
             </div>
             <div className="reading-card p-5 rounded-xl">
                <div className="text-2xl font-semibold tabular-nums text-[hsl(var(--reading-ink))]">
-                  {totalReadingHours}h {totalReadingMinutes}m
+                  {totalReadingHours}h {totalReadingMinutes}m {totalReadingSeconds}s
                </div>
                <div className="text-xs text-[hsl(var(--reading-ink-muted))] mt-1">Reading time</div>
                <Clock className="w-5 h-5 text-[hsl(var(--reading-accent))] mt-3 opacity-80" />

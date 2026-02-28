@@ -152,8 +152,8 @@ export function useAppData() {
     const syncFromSupabase = async () => {
       setSyncing(true);
       try {
-        // Fetch books and pet in parallel
-        const [booksRes, petsRes] = await Promise.all([
+        // Fetch books, pet, and reading sessions in parallel
+        const [booksRes, petsRes, sessionsRes] = await Promise.all([
           supabase
             .from('books')
             .select('*')
@@ -164,20 +164,31 @@ export function useAppData() {
             .select('*')
             .eq('user_id', userId)
             .maybeSingle(),
+          supabase
+            .from('reading_sessions')
+            .select('seconds')
+            .eq('user_id', userId),
         ]);
 
         if (booksRes.error) throw booksRes.error;
-        // Pets table might not exist yet; treat as no pet
+        // Pets / reading_sessions might not exist yet; treat as empty
         const petRow = petsRes.error ? null : petsRes.data;
         const existingPet = petRow ? dbRowToPet(petRow) : null;
 
         const dbBooks: Book[] = (booksRes.data ?? []).map(dbBookToBook);
 
-        // Rebuild character state from DB books so it stays consistent
+        // Rebuild character state from DB books
         let character = initializeCharacter();
         [...dbBooks].reverse().forEach((book) => {
           character = applyBookToCharacter(character, book);
         });
+
+        // Apply all reading sessions from cloud so totalReadingTime (and level) persist
+        const sessions = sessionsRes.error ? [] : (sessionsRes.data ?? []);
+        const totalSessionSeconds = sessions.reduce((sum: number, row: { seconds?: number }): number => sum + (row.seconds ?? 0), 0);
+        if (totalSessionSeconds > 0) {
+          character = applyReadingSession(character, totalSessionSeconds);
+        }
 
         const localData = loadFromStorage();
         const hasLocalBooks = (localData?.books?.length ?? 0) > 0;
@@ -332,10 +343,10 @@ export function useAppData() {
   );
 
   const completeSession = useCallback(
-    async (minutes: number) => {
+    async (seconds: number) => {
       if (!data) return;
 
-      const updatedCharacter = applyReadingSession(data.character, minutes);
+      const updatedCharacter = applyReadingSession(data.character, seconds);
       const seed = getSeed();
       let pet = data.pet ?? (seed ? createInitialPet(seed, updatedCharacter, data.books) : null);
       if (pet) {
@@ -354,13 +365,15 @@ export function useAppData() {
       if (isAuthEnabled && userId) {
         try {
           const sessionId = crypto.randomUUID();
-          await Promise.all([
-            supabase.from('reading_sessions').insert({
-              id: sessionId,
-              user_id: userId,
-              minutes,
-            }),
-          ]);
+          const { error: sessionError } = await supabase.from('reading_sessions').insert({
+            id: sessionId,
+            user_id: userId,
+            seconds,
+            book_id: null,
+          });
+          if (sessionError) {
+            console.error('Failed to save reading session to Supabase:', sessionError.message, sessionError.details);
+          }
           if (pet) await upsertPet(pet, userId);
         } catch (err) {
           console.error('Failed to save session to Supabase:', err);

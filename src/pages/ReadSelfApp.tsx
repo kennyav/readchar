@@ -45,6 +45,7 @@ export default function ReadSelfApp() {
   const recommendations = getRecommendations(data.character);
   const totalReadingHours = Math.floor(data.character.totalReadingTime / 3600);
   const totalReadingMinutes = Math.floor((data.character.totalReadingTime % 3600) / 60);
+  const totalReadingSeconds = Math.floor(data.character.totalReadingTime % 60);
   const level = data.character.currentLevel;
 
   return (
@@ -147,7 +148,7 @@ export default function ReadSelfApp() {
           </TabsContent>
 
           <TabsContent value="stats" className="mt-0">
-            <StatsTab data={data} totalReadingHours={totalReadingHours} totalReadingMinutes={totalReadingMinutes} isActive={tabValue === 'stats'} />
+            <StatsTab data={data} totalReadingHours={totalReadingHours} totalReadingMinutes={totalReadingMinutes} totalReadingSeconds={totalReadingSeconds} isActive={tabValue === 'stats'} />
           </TabsContent>
         </Tabs>
       </main>

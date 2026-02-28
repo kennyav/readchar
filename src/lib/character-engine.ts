@@ -82,9 +82,10 @@ export function applyBookToCharacter(character: CharacterState, book: Book): Cha
   };
 }
 
-export function applyReadingSession(character: CharacterState, durationMinutes: number): CharacterState {
+export function applyReadingSession(character: CharacterState, durationSeconds: number): CharacterState {
   const pointsPerMinute = 0.5;
-  const totalPoints = Math.floor(durationMinutes * pointsPerMinute);
+  const effectiveMinutes = durationSeconds / 60;
+  const totalPoints = Math.floor(effectiveMinutes * pointsPerMinute);
   const pointsPerAttribute = Math.floor(totalPoints / 7);
 
   const updatedAttributes = { ...character.attributes };
@@ -105,7 +106,7 @@ export function applyReadingSession(character: CharacterState, durationMinutes: 
   return {
     ...character,
     attributes: updatedAttributes,
-    totalReadingTime: character.totalReadingTime + (durationMinutes * 60),
+    totalReadingTime: character.totalReadingTime + durationSeconds,
     currentLevel: newLevel,
   };
 }
