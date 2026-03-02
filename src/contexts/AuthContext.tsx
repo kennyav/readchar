@@ -24,18 +24,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
+
+    // After OAuth redirect the session is in the URL hash; getSession() can resolve
+    // before Supabase parses it, so we wait for session recovery to avoid redirecting
+    // to login and then ending up with a broken/white screen.
+    const hasAuthHash =
+      typeof window !== 'undefined' &&
+      /#.*(access_token|refresh_token|code=)/.test(window.location.hash);
+
+    let loadingResolved = false;
+    const resolveLoading = () => {
+      if (loadingResolved) return;
+      loadingResolved = true;
       setLoading(false);
-    });
+    };
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      if (hasAuthHash) resolveLoading();
     });
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (!hasAuthHash) resolveLoading();
+    });
+
+    // If we have auth hash but no event fires (e.g. invalid token), stop loading after a short delay
+    if (hasAuthHash) {
+      const fallback = setTimeout(resolveLoading, 3000);
+      return () => {
+        subscription.unsubscribe();
+        clearTimeout(fallback);
+      };
+    }
 
     return () => subscription.unsubscribe();
   }, []);
