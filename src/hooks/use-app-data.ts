@@ -244,7 +244,7 @@ export function useAppData() {
 
   const addBook = useCallback(
     async (bookData: { title: string; author: string; genre: Genre; coverId: number | null }) => {
-      if (!data) return;
+      if (!data) return { leveledUp: false, petEvolvedToHatchling: false };
 
       const newBook: Book = {
         id: crypto.randomUUID(),
@@ -294,7 +294,12 @@ export function useAppData() {
         }
       }
 
-      return updatedCharacter.currentLevel > oldLevel; // true if leveled up
+      const wasEgg = data.pet?.stage === 'egg';
+      const nowHatchling = pet?.stage === 'hatchling';
+      return {
+        leveledUp: updatedCharacter.currentLevel > oldLevel,
+        petEvolvedToHatchling: Boolean(wasEgg && nowHatchling),
+      };
     },
     [data, userId]
   );
@@ -344,7 +349,7 @@ export function useAppData() {
 
   const completeSession = useCallback(
     async (seconds: number) => {
-      if (!data) return;
+      if (!data) return { petEvolvedToHatchling: false };
 
       const updatedCharacter = applyReadingSession(data.character, seconds);
       const seed = getSeed();
@@ -379,6 +384,10 @@ export function useAppData() {
           console.error('Failed to save session to Supabase:', err);
         }
       }
+
+      const wasEgg = data.pet?.stage === 'egg';
+      const nowHatchling = pet?.stage === 'hatchling';
+      return { petEvolvedToHatchling: Boolean(wasEgg && nowHatchling) };
     },
     [data, userId]
   );

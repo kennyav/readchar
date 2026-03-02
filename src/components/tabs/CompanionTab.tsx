@@ -15,6 +15,8 @@ interface CompanionTabProps {
   level: number;
   isActive: boolean;
   onUpdatePetName?: (name: string) => void;
+  /** Dev only: callback to trigger evolution cutscene for testing */
+  onDevPlayEvolutionCutscene?: () => void;
 }
 
 export default function CompanionTab({
@@ -25,6 +27,7 @@ export default function CompanionTab({
   level,
   isActive,
   onUpdatePetName,
+  onDevPlayEvolutionCutscene,
 }: CompanionTabProps) {
   const [searchParams] = useSearchParams();
   const forceRainbow = searchParams.get('rainbow') === '1';
@@ -53,24 +56,40 @@ export default function CompanionTab({
           <div className="rounded-2xl p-6 reading-card inline-block">
             {pet ? (
               <>
-                <PetAvatar pet={pet} size={240} animation={petAnimation} forceRainbow={forceRainbow} />
-                {pet.stage !== 'egg' && (
-                  <button
-                    type="button"
-                    onClick={() => setPetAnimation((a) => (a === 'run' ? 'idle' : 'run'))}
-                    className="mt-3 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))] transition-colors"
-                  >
-                    {petAnimation === 'run' ? (
-                      <>
-                        <Square className="h-3.5 w-3.5" /> Stop
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-3.5 w-3.5" /> Watch them run
-                      </>
-                    )}
-                  </button>
-                )}
+                <PetAvatar
+                  pet={pet}
+                  size={240}
+                  animation={petAnimation}
+                  forceRainbow={forceRainbow}
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  {pet.stage !== 'egg' && (
+                    <button
+                      type="button"
+                      onClick={() => setPetAnimation((a) => (a === 'run' ? 'idle' : 'run'))}
+                      className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--reading-ink-muted))] hover:text-[hsl(var(--reading-ink))] hover:bg-[hsl(var(--reading-surface-soft))] transition-colors"
+                    >
+                      {petAnimation === 'run' ? (
+                        <>
+                          <Square className="h-3.5 w-3.5" /> Stop
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3.5 w-3.5" /> Watch them run
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {import.meta.env.DEV && onDevPlayEvolutionCutscene && (
+                    <button
+                      type="button"
+                      onClick={onDevPlayEvolutionCutscene}
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 dark:text-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-800/50 transition-colors"
+                    >
+                      Play evolution cutscene
+                    </button>
+                  )}
+                </div>
               </>
             ) : (
               <div

@@ -14,6 +14,7 @@ import { createInitialPet } from '@/lib/pet-engine';
 import { generateSeed } from '@/lib/avatar-seed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppData } from '@/hooks/use-app-data';
+import { PetAvatar } from '@/components/pet/PetAvatar';
 import CompanionTab from '@/components/tabs/CompanionTab'
 import LibraryTab from '@/components/tabs/LibraryTab';
 import StatsTab from '@/components/tabs/StatsTab';
@@ -29,9 +30,10 @@ export default function ReadSelfApp() {
   const [showAddBook, setShowAddBook] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
   const [showEvolution, setShowEvolution] = useState(false);
+  const [showEvolutionCutscene, setShowEvolutionCutscene] = useState(false);
   const [tabValue, setTabValue] = useState('character');
 
-  const books = data.books;
+  const books = data?.books ?? [];
   const isEmpty = books.length === 0;
 
   if (!data) {
@@ -43,10 +45,22 @@ export default function ReadSelfApp() {
   }
 
   const handleAddBook = async (bookData: { title: string; author: string; genre: Genre; coverId: number | null }) => {
-    const leveledUp = await addBook(bookData);
-    if (leveledUp) {
+    const result = await addBook(bookData);
+    if (result?.petEvolvedToHatchling) {
+      setTabValue('character');
+      setShowEvolutionCutscene(true);
+    }
+    if (result?.leveledUp) {
       setShowEvolution(true);
       setTimeout(() => setShowEvolution(false), 3000);
+    }
+  };
+
+  const handleCompleteSession = async (seconds: number) => {
+    const result = await completeSession(seconds);
+    if (result?.petEvolvedToHatchling) {
+      setTabValue('character');
+      setShowEvolutionCutscene(true);
     }
   };
 
@@ -129,6 +143,39 @@ export default function ReadSelfApp() {
               <Sparkles className="w-6 h-6 text-[hsl(var(--reading-accent))]" />
               <span className="font-reading-heading font-semibold">Your pet grew a little.</span>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Evolution cutscene modal */}
+      <AnimatePresence>
+        {showEvolutionCutscene && displayPet && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            aria-modal
+            aria-label="Your pet is evolving!"
+          >
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="relative z-10 flex flex-col items-center justify-center rounded-3xl bg-[hsl(var(--reading-surface))] shadow-2xl ring-2 ring-[hsl(var(--reading-border))] p-8 max-w-sm"
+            >
+              <p className="text-sm font-medium text-[hsl(var(--reading-ink-muted))] mb-4">Your pet is evolving!</p>
+              <PetAvatar
+                pet={displayPet}
+                size={280}
+                animation="idle"
+                evolutionCutscene
+                onEvolutionCutsceneComplete={() => setShowEvolutionCutscene(false)}
+              />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -344,6 +391,7 @@ export default function ReadSelfApp() {
               level={level}
               isActive={tabValue === 'character'}
               onUpdatePetName={updatePetName}
+              onDevPlayEvolutionCutscene={import.meta.env.DEV ? () => setShowEvolutionCutscene(true) : undefined}
             />
           </TabsContent>
 
@@ -358,7 +406,7 @@ export default function ReadSelfApp() {
       </main>
 
       <AddBookDialog open={showAddBook} onClose={() => setShowAddBook(false)} onAdd={handleAddBook} />
-      <ReadingTimerDialog open={showTimer} onClose={() => setShowTimer(false)} onComplete={completeSession} />
+      <ReadingTimerDialog open={showTimer} onClose={() => setShowTimer(false)} onComplete={handleCompleteSession} />
     </div>
   );
 }

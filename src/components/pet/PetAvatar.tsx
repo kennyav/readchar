@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Pet, PetStage, PetTraits } from '@/types/reading';
 
@@ -18,11 +19,16 @@ interface PetAvatarProps {
   animation?: PetAnimation;
   /** Dev only: force rainbow variant (e.g. from ?rainbow=1). */
   forceRainbow?: boolean;
+  /** When true, plays egg ↔ hatchling flash cutscene then calls onEvolutionCutsceneComplete. */
+  evolutionCutscene?: boolean;
+  onEvolutionCutsceneComplete?: () => void;
 }
 
 // Pokémon-style: thick black outline, flat colors, readable silhouettes
 const OUTLINE = '#1a1a1a';
 const OUTLINE_WIDTH = 2.5;
+/** Dark fill for hatchling silhouette during evolution cutscene */
+const EVOLUTION_SILHOUETTE = '#2d2d2d';
 
 /** Evolution line: 0 = Charmander (fire/dragon), 1 = Squirtle (turtle), 2 = Bulbasaur (plant). */
 type EvolutionLine = 0 | 1 | 2;
@@ -278,21 +284,55 @@ function RainbowGradientDefs({ id }: { id: string }) {
   );
 }
 
-export function PetAvatar({ pet, size = 200, animation = 'idle', forceRainbow = false }: PetAvatarProps) {
+const EVOLUTION_FLASH_MS = 140;
+const EVOLUTION_CUTSCENE_DURATION_MS = 2600;
+
+export function PetAvatar({
+  pet,
+  size = 200,
+  animation = 'idle',
+  forceRainbow = false,
+  evolutionCutscene = false,
+  onEvolutionCutsceneComplete,
+}: PetAvatarProps) {
   const { traits, stage } = pet;
   const isRunning = animation === 'run';
   const isRainbow = traits.isRainbow ?? forceRainbow;
   const gradientId = `${RAINBOW_GRADIENT_ID}-${pet.id}`;
-  const displayTraits: PetTraits = isRainbow
+  let displayTraits: PetTraits = isRainbow
     ? { ...traits, primaryColor: `url(#${gradientId})`, secondaryColor: `url(#${gradientId})` }
     : traits;
+
+  const [cutsceneStage, setCutsceneStage] = useState<PetStage>('egg');
+  const onCompleteRef = useRef(onEvolutionCutsceneComplete);
+  onCompleteRef.current = onEvolutionCutsceneComplete;
+  useEffect(() => {
+    if (!evolutionCutscene) return;
+    setCutsceneStage('egg');
+    const interval = setInterval(() => {
+      setCutsceneStage((s) => (s === 'egg' ? 'hatchling' : 'egg'));
+    }, EVOLUTION_FLASH_MS);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      onCompleteRef.current?.();
+    }, EVOLUTION_CUTSCENE_DURATION_MS);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [evolutionCutscene]);
+
+  const displayStage = evolutionCutscene ? cutsceneStage : stage;
+  if (evolutionCutscene && displayStage === 'hatchling') {
+    displayTraits = { ...displayTraits, primaryColor: EVOLUTION_SILHOUETTE, secondaryColor: EVOLUTION_SILHOUETTE };
+  }
 
   return (
     <div
       className="relative flex items-center justify-center overflow-hidden"
       style={{ width: size, height: size }}
       role="img"
-      aria-label={isRunning ? `${pet.name} running` : `${pet.name}, ${stage} pet`}
+      aria-label={isRunning ? `${pet.name} running` : `${pet.name}, ${displayStage} pet`}
     >
       {/* Layer 1: background + shadow — fixed on y, shadow has its own subtle motion */}
       <svg
@@ -357,12 +397,12 @@ export function PetAvatar({ pet, size = 200, animation = 'idle', forceRainbow = 
                 transition={BOB_TRANSITION}
               />
             )}
-            {renderSpecies(displayTraits, stage)}
-            {stage !== 'egg' && (
+            {renderSpecies(displayTraits, displayStage)}
+            {displayStage !== 'egg' && !(evolutionCutscene && displayStage === 'hatchling') && (
               <>
-                {renderEyes(displayTraits, stage)}
-                {renderMouth(displayTraits, stage)}
-                {stage === 'hatchling' && renderAccessory(displayTraits)}
+                {renderEyes(displayTraits, displayStage)}
+                {renderMouth(displayTraits, displayStage)}
+                {displayStage === 'hatchling' && renderAccessory(displayTraits)}
               </>
             )}
           </g>
