@@ -70,17 +70,17 @@ export interface CharacterJournalEntry {
   evolutionLevel?: number;
 }
 
-// export interface CharacterState {
-//   attributes: Record<AttributeType, Attribute>;
-//   totalBooksRead: number;
-//   totalReadingTime: number; // in seconds
-//   currentLevel: number;
-//   visualTraits: {
-//     baseColor: string;
-//     accessories: string[];
-//     aura: string;
-//   };
-// }
+export interface CharacterState {
+  attributes: Record<AttributeType, Attribute>;
+  totalBooksRead: number;
+  totalReadingTime: number; // in seconds
+  currentLevel: number;
+  visualTraits: {
+    baseColor: string;
+    accessories: string[];
+    aura: string;
+  };
+}
 
 export interface OnboardingAnswers {
   favoriteGenres: Genre[];
