@@ -18,7 +18,7 @@ import CompanionTab from '@/components/tabs/CompanionTab'
 import LibraryTab from '@/components/tabs/LibraryTab';
 import StatsTab from '@/components/tabs/StatsTab';
 
-const DEV_PET_STAGES: PetStage[] = ['egg', 'hatchling', 'adult'];
+const DEV_PET_STAGES: PetStage[] = ['egg', 'hatchling'];
 const DEV_ACCESSORIES = ['hat', 'glasses'] as const;
 
 export default function ReadSelfApp() {

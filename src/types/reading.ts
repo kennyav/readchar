@@ -107,6 +107,8 @@ export interface PetTraits {
   mouthStyle: number;
   /** Accessory from dominant genre (e.g. hat, glasses) — optional key */
   accessory: string | null;
+  /** Secret 1% variant: rainbow-colored pet (set at creation, preserved on evolution) */
+  isRainbow?: boolean;
 }
 
 export interface Pet {

@@ -8,11 +8,10 @@ import type { Book, CharacterState, Genre, Pet, PetStage, PetTraits } from '@/ty
 import { GENRE_VISUALS } from './avatar-traits';
 
 // ── Stage thresholds (by character level) ──
-
+// Adults are currently disabled in the evolution lineup; pets stop at hatchling.
 const STAGE_LEVELS: { stage: PetStage; minLevel: number }[] = [
   { stage: 'egg', minLevel: 1 },
   { stage: 'hatchling', minLevel: 4 },
-  { stage: 'adult', minLevel: 8 },
 ];
 
 export function getPetStage(character: CharacterState): PetStage {
@@ -55,6 +54,8 @@ export function computePetTraits(seed: string, books: Book[], character: Charact
   // Blend with genre so reading taste influences color
   const primaryColor = books.length > 0 ? genreColor : PET_PRIMARY_COLORS[primaryIndex];
   const secondaryColor = PET_SECONDARY_COLORS[secondaryIndex];
+  // Secret 1% rainbow variant (deterministic from seed; set at creation, preserved on evolution)
+  const isRainbow = seedValue(seed, 'pet_rainbow') < 0.01;
 
   // Evolution line: 0 = Charmander, 1 = Squirtle, 2 = Bulbasaur. Clamp so 0/1/2 are all possible.
   const bodyType = Math.min(2, Math.floor(seedValue(seed, 'pet_body') * 3));
@@ -85,6 +86,7 @@ export function computePetTraits(seed: string, books: Book[], character: Charact
     eyeStyle: 1,
     mouthStyle,
     accessory,
+    isRainbow,
   };
 }
 
@@ -93,9 +95,11 @@ export function computePetTraits(seed: string, books: Book[], character: Charact
 export function createInitialPet(seed: string, character: CharacterState, books: Book[], id?: string): Pet {
   const stage = getPetStage(character);
   const traits = computePetTraits(seed, books, character);
-  // Randomize primary color at creation so each pet gets a random look from the palette
-  traits.primaryColor =
-    PET_PRIMARY_COLORS[Math.floor(Math.random() * PET_PRIMARY_COLORS.length)];
+  // Randomize primary color at creation so each pet gets a random look from the palette (unless rainbow)
+  if (!traits.isRainbow) {
+    traits.primaryColor =
+      PET_PRIMARY_COLORS[Math.floor(Math.random() * PET_PRIMARY_COLORS.length)];
+  }
   const now = new Date();
   const defaultName = getDefaultPetName(seed);
   return {
@@ -125,8 +129,9 @@ export function evolvePetIfNeeded(
 ): { pet: Pet; didEvolve: boolean } {
   const newStage = getPetStage(character);
   const newTraits = computePetTraits(pet.seed, books, character);
-  // Keep the pet's random primary color across evolution
+  // Keep the pet's random primary color and rainbow variant across evolution
   newTraits.primaryColor = pet.traits.primaryColor;
+  newTraits.isRainbow = pet.traits.isRainbow;
   const stageChanged = newStage !== pet.stage;
   const traitsChanged =
     JSON.stringify(newTraits) !== JSON.stringify(pet.traits);

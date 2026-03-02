@@ -16,6 +16,8 @@ interface PetAvatarProps {
   size?: number;
   /** When 'run', pet runs across the area with a bouncy stride (still procedural, no art). */
   animation?: PetAnimation;
+  /** Dev only: force rainbow variant (e.g. from ?rainbow=1). */
+  forceRainbow?: boolean;
 }
 
 // Pokémon-style: thick black outline, flat colors, readable silhouettes
@@ -177,8 +179,10 @@ function renderMouth(traits: PetTraits, stage: PetStage) {
   }
 
   if (style === 2) {
-    // Smile with tooth sticking out (one side)
+    // Smile with tooth (90% size, 2px down), rotated clockwise
     const curve = 2.5 * scale;
+    const toothBaseX = cx + w - 12;
+    const toothBaseY = mouthY + 0.5;
     return (
       <g>
         <path
@@ -188,12 +192,14 @@ function renderMouth(traits: PetTraits, stage: PetStage) {
           strokeWidth={OUTLINE_WIDTH}
           strokeLinecap="round"
         />
-        <path
-          d={`M ${cx + w - 2} ${mouthY} L ${cx + w + 6 * scale} ${mouthY - 4 * scale} L ${cx + w + 6 * scale} ${mouthY + 4 * scale} Z`}
-          fill="#fff"
-          stroke={OUTLINE}
-          strokeWidth={OUTLINE_WIDTH}
-        />
+        <g transform={`rotate(22, ${toothBaseX}, ${toothBaseY})`}>
+          <path
+            d={`M ${toothBaseX} ${toothBaseY} L ${cx + w - 10.38 + 4.86 * scale} ${toothBaseY - 3.24 * scale} L ${cx + w - 10.38 + 4.86 * scale} ${toothBaseY + 3.24 * scale} Z`}
+            fill="#fff"
+            stroke={OUTLINE}
+            strokeWidth={1}
+          />
+        </g>
       </g>
     );
   }
@@ -211,13 +217,14 @@ function renderMouth(traits: PetTraits, stage: PetStage) {
   );
 }
 
-// Accessory only on adult
+// Accessory for evolved stages (currently hatchling only)
 function renderAccessory(traits: PetTraits) {
   if (!traits.accessory) return null;
 
   if (traits.accessory === 'hat') {
+    const hatYOffset = traits.bodyType === 0 || traits.bodyType === 1 ? 7 : 0; // move down 7px for Charmander & Squirtle
     return (
-      <g transform={`translate(${cx}, ${cy - 48})`}>
+      <g transform={`translate(${cx}, ${cy - 48 + hatYOffset})`}>
         <path d="M -20 0 L 0 -32 L 20 0 Z" fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
         <ellipse cx={0} cy={6} rx={24} ry={7} fill={traits.secondaryColor} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
       </g>
@@ -225,9 +232,9 @@ function renderAccessory(traits: PetTraits) {
   }
   if (traits.accessory === 'glasses') {
     return (
-      <g transform={`translate(${cx}, ${cy - 10})`}>
-        <ellipse cx={-16} cy={0} rx={12} ry={13} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
-        <ellipse cx={16} cy={0} rx={12} ry={13} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+      <g transform={`translate(${cx}, ${cy - 9})`}>
+        <ellipse cx={-16} cy={0} rx={10} ry={11} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
+        <ellipse cx={16} cy={0} rx={10} ry={11} fill="none" stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
         <line x1={-4} y1={0} x2={4} y2={0} stroke={OUTLINE} strokeWidth={OUTLINE_WIDTH} />
       </g>
     );
@@ -252,9 +259,33 @@ function renderSpecies(traits: PetTraits, stage: PetStage) {
 const RUN_X_DURATION = 2.8;
 const RUN_BOUNCE_DURATION = 0.25;
 
-export function PetAvatar({ pet, size = 200, animation = 'idle' }: PetAvatarProps) {
+const RAINBOW_GRADIENT_ID = 'pet-rainbow';
+
+/** Rainbow linear gradient for the secret 1% variant. */
+function RainbowGradientDefs({ id }: { id: string }) {
+  return (
+    <defs>
+      <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#ff0000" />
+        <stop offset="17%" stopColor="#ff8800" />
+        <stop offset="33%" stopColor="#ffff00" />
+        <stop offset="50%" stopColor="#00cc00" />
+        <stop offset="67%" stopColor="#0088ff" />
+        <stop offset="83%" stopColor="#8800ff" />
+        <stop offset="100%" stopColor="#ff00ff" />
+      </linearGradient>
+    </defs>
+  );
+}
+
+export function PetAvatar({ pet, size = 200, animation = 'idle', forceRainbow = false }: PetAvatarProps) {
   const { traits, stage } = pet;
   const isRunning = animation === 'run';
+  const isRainbow = traits.isRainbow ?? forceRainbow;
+  const gradientId = `${RAINBOW_GRADIENT_ID}-${pet.id}`;
+  const displayTraits: PetTraits = isRainbow
+    ? { ...traits, primaryColor: `url(#${gradientId})`, secondaryColor: `url(#${gradientId})` }
+    : traits;
 
   return (
     <div
@@ -311,6 +342,7 @@ export function PetAvatar({ pet, size = 200, animation = 'idle' }: PetAvatarProp
         }
       >
         <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden className="flex-shrink-0">
+          {isRainbow && <RainbowGradientDefs id={gradientId} />}
           <g>
             {isRunning && (
               <motion.ellipse
@@ -325,12 +357,12 @@ export function PetAvatar({ pet, size = 200, animation = 'idle' }: PetAvatarProp
                 transition={BOB_TRANSITION}
               />
             )}
-            {renderSpecies(traits, stage)}
+            {renderSpecies(displayTraits, stage)}
             {stage !== 'egg' && (
               <>
-                {renderEyes(traits, stage)}
-                {renderMouth(traits, stage)}
-                {stage === 'adult' && renderAccessory(traits)}
+                {renderEyes(displayTraits, stage)}
+                {renderMouth(displayTraits, stage)}
+                {stage === 'hatchling' && renderAccessory(displayTraits)}
               </>
             )}
           </g>

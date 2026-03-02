@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PetAvatar, type PetAnimation } from '@/components/pet/PetAvatar';
 import { GenreLegend } from '@/components/character/GenreLegend';
@@ -25,6 +26,8 @@ export default function CompanionTab({
   isActive,
   onUpdatePetName,
 }: CompanionTabProps) {
+  const [searchParams] = useSearchParams();
+  const forceRainbow = searchParams.get('rainbow') === '1';
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(pet?.name ?? '');
   const [petAnimation, setPetAnimation] = useState<PetAnimation>('idle');
@@ -50,7 +53,7 @@ export default function CompanionTab({
           <div className="rounded-2xl p-6 reading-card inline-block">
             {pet ? (
               <>
-                <PetAvatar pet={pet} size={240} animation={petAnimation} />
+                <PetAvatar pet={pet} size={240} animation={petAnimation} forceRainbow={forceRainbow} />
                 {pet.stage !== 'egg' && (
                   <button
                     type="button"
